@@ -15,6 +15,7 @@ namespace DuckGame.DuckUtils {
         private float radius;
 
         private Vec2 travel;
+        private Thing sender;
 
         public FututreSphere(float xval, float yval, Thing owner, Vec2 velocity)
             : base(xval, yval)
@@ -27,7 +28,7 @@ namespace DuckGame.DuckUtils {
             depth = 0.5f;
 
             travel = velocity;
-            this.owner = owner;
+            sender = owner;
         }
 
         public override void Update() {
@@ -36,14 +37,14 @@ namespace DuckGame.DuckUtils {
             position += travel * radius * 15f * Maths.IncFrameTimer();
             radius += 35f * Maths.IncFrameTimer();
 
-            if (base.isServerForObject && (base.x > Level.current.bottomRight.x + 200f || base.x < Level.current.topLeft.x - 200f))
+            if (isServerForObject && (base.x > Level.current.bottomRight.x + 200f || base.x < Level.current.topLeft.x - 200f))
             {
                 Level.Remove(this);
             }
 
             foreach (MaterialThing item in Level.CheckCircleAll<MaterialThing>(position, radius))
             {
-                if(item != owner) {
+                if(item != sender && item.isServerForObject) {
                     item.Destroy(new DTIncinerate(this));
                 }
             }

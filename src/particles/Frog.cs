@@ -39,11 +39,6 @@ namespace DuckGame.DuckUtils {
             jumpTime = Rando.Float(0f, 2f);
         }
 
-        public override void Initialize()
-        {
-            base.Initialize();
-        }
-
         public override void Update()
         {
             base.Update();

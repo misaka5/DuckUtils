@@ -48,7 +48,7 @@ namespace DuckGame.DuckUtils {
 			base.Update();
 
 			ammo = MaxAmmo;
-			if(duck != null) {
+			if(duck != null && isServerForObject) {
 				StoredItem stored = PurpleBlock.GetStoredItem(duck.profile);
 
 				if(stored.type == GetType()) {

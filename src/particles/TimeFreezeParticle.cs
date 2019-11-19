@@ -11,10 +11,12 @@ namespace DuckGame.DuckUtils {
         private float lifetime = MaxLifetime;
         private float radius = 0;
 
+        public StateBinding PositionBinding { get; private set; }
         public StateBinding RadiusBinding { get; private set; }
 
         public TimeFreezeParticle(float x, float y) : base(x, y) {         
             RadiusBinding = new StateBinding("radius");
+            PositionBinding = new CompressedVec2Binding("position", 2147483647, isvelocity: false, doLerp: true);
             
             this.depth = -1f;
             //this.material = new MaterialGlitch(this);

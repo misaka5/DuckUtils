@@ -6,7 +6,7 @@ namespace DuckGame.DuckUtils {
     
     [EditorGroup("duckutils")]
     [BaggedProperty("isFatal", true)]
-    public class ClashShield : Gun
+    public class ClashShield : Gun, IPlatform
     {
         public static readonly int[] LightningPattern1 = new int[] { 5, 2, 12, 8, 14, 4, 10, 9, 11, 13, 7, 3, 6, 1, 15, 
                                                                      11, 13, 8, 7, 12, 5, 14, 2, 1, 6, 9, 4, 10, 3, 15 };
@@ -87,35 +87,67 @@ namespace DuckGame.DuckUtils {
             thickness = 8.9f;
             weight = 9f;
             center = new Vec2(16f, 18f);
-            collisionOffset = new Vec2(-3f, -18f);
-            collisionSize = new Vec2(16f, 27f);
+            collisionOffset = new Vec2(-5f, -18f);
+            collisionSize = new Vec2(15f, 27f);
             handOffset = new Vec2(0f, 1000000f);
             _holdOffset = new Vec2(-3f, 4f);
             _barrelOffsetTL = new Vec2(23f, 12f);
         }
 
-        public override void OnImpact(MaterialThing with, ImpactedFrom from)
+        public override void Impact(MaterialThing with, ImpactedFrom from, bool solidImpact)
         {
-            if(from == ImpactedFrom.Top) {
-                float grav = with is PhysicsObject ? (with as PhysicsObject).currentGravity : 0.2f;
+            if(from == ImpactedFrom.Top) { 
+                with.SolidImpact(this, ImpactedFrom.Left);
+                if (with.destroyed) return;
+                SolidImpact(with, from);
 
-                with.vSpeed = -TopCollisionVerticalEnergy * grav;
-                with.hSpeed = (offDir > 0 ? TopCollisionHorizontalEnergy : -TopCollisionHorizontalEnergy);
+                if (offDir > 0 && with.hSpeed < 2f)
+                {
+                    with.hSpeed = 2f;
+                }
+
+                if (offDir < 0 && with.hSpeed > -2f)
+                {
+                    with.hSpeed = -2f;
+                }
 
                 if(with is Gun) (with as Gun).PressAction();
             }
 
             if(offDir > 0 && from == ImpactedFrom.Right) {
-                with.hSpeed = CollisionEnergy;
+                with.SolidImpact(this, ImpactedFrom.Left);
+                if (with.destroyed) return;
+                
+                with.x = right + (with.x - with.left);
+                SolidImpact(with, from);
+
+                if (with.hSpeed < 0)
+                {
+                    with.hSpeed = -with.hSpeed * with.bouncy;
+                    if (Math.Abs(with.hSpeed) < 0.1f) with.hSpeed = 0f;
+                }
+
                 if(with is Gun) (with as Gun).PressAction();
             }
 
             if(offDir < 0 && from == ImpactedFrom.Left) {
-                with.hSpeed = -CollisionEnergy;
+                with.SolidImpact(this, ImpactedFrom.Right);
+                if (with.destroyed) return;
+
+                with.x = left + (with.x - with.right);
+			    SolidImpact(with, from);
+
+                if (with.hSpeed > 0)
+                {
+                    with.hSpeed = -with.hSpeed * with.bouncy;
+                    if (Math.Abs(with.hSpeed) < 0.1f)
+                        with.hSpeed = 0f;
+                }
+
                 if(with is Gun) (with as Gun).PressAction();
             }
 
-            base.OnImpact(with, from);
+            base.Impact(with, from, solidImpact);
         }
 
         public override bool Hit(Bullet bullet, Vec2 hitPos)
@@ -153,7 +185,8 @@ namespace DuckGame.DuckUtils {
 
                 switch(state.Increase()) {
                     case ZapResult.Slowdown: 
-                        current.vSpeed *= SlowdownFactor;
+                        if(current.vSpeed < 0) 
+                            current.vSpeed *= SlowdownFactor;
                         current.hSpeed *= SlowdownFactor;
                         break;
                     case ZapResult.Zap:

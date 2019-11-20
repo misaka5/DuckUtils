@@ -23,11 +23,14 @@ namespace DuckGame.DuckUtils {
 
         public StateBinding PlayBinding { get; private set; }
 
+        public NetSoundBinding SoundBinding { get; private set; }
+
         private SpriteMap sprite;
 
         private LoopData loop = new LoopData(LoopTimings);
 
         private Sound sound;
+        private NetSoundEffect endSound;
 
         private bool _playing;
         public bool Playing {
@@ -79,6 +82,9 @@ namespace DuckGame.DuckUtils {
 
             _kickForce = 10f;
             _numBulletsPerFire = 7;
+
+            endSound = new NetSoundEffect(DuckUtils.GetAsset("sounds/vote_end.wav"));
+			SoundBinding = new NetSoundBinding("endSound");
         }
 
         public override void OnPressAction(){
@@ -91,10 +97,10 @@ namespace DuckGame.DuckUtils {
         }
 
         private void Explode() {
-            Explosion.Create(this, position);
-            Level.Remove(this);
-            SFX.Play(DuckUtils.GetAsset("sounds/vote_end.wav"));
             Playing = false;
+            endSound.Play();
+            Explosion.Create(this, position);
+            Level.Remove(this);    
         }
 
         public override void OnHoldAction() {

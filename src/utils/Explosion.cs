@@ -46,7 +46,6 @@ namespace DuckGame.DuckUtils {
 
         public static void Create(Thing owner, Vec2 pos, Config cfg) {
             if(cfg.Flash) Graphics.FlashScreen();
-            
             float x = pos.x;
             float y = pos.y - 2f;
             Level.Add(new ExplosionPart(x, y));

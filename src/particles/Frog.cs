@@ -15,11 +15,13 @@ namespace DuckGame.DuckUtils {
         private float jumpDirection;        
         private float jumpTime;
 
+        public StateBinding LifetimeBinding { get; private set; }
+
         public Frog(float xpos, float ypos, bool direction)
             : base(xpos, ypos)
         {
-           // _sprite.AddAnimation("frog", 1f, true, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-            //_sprite.SetAnimation("frog");
+            LifetimeBinding = new StateBinding("lifetime");
+
             graphic = new SpriteMap(DuckUtils.GetAsset("part/frog.png"), 16, 16);
 
             float scale = xscale = yscale = Rando.Float(0.5f, 0.8f);
@@ -52,7 +54,9 @@ namespace DuckGame.DuckUtils {
                 lifetime -= Maths.IncFrameTimer();
             }
 
-            UpdateBehavior();
+            if(isServerForObject) {
+                UpdateBehavior();
+            } 
         }
 
         private void UpdateBehavior() {

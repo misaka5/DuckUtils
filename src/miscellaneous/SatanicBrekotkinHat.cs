@@ -14,11 +14,11 @@ namespace DuckGame.DuckUtils {
         };
 
         public StateBinding PlayingBinding { get; private set; }
+        public StateBinding TimeOpenedBinding { get; private set; }
 
+        private bool exploded;
         private Sound sound;
 
-        private bool exploded = false;
-        
         private bool _playing;
         public bool Playing {
             get {
@@ -37,6 +37,7 @@ namespace DuckGame.DuckUtils {
         public SatanicBrekotkinHat(float x, float y) : base(x, y) 
         {
             PlayingBinding = new StateBinding("Playing");
+            TimeOpenedBinding = new StateBinding("TimeOpened");
 
             graphic = _pickupSprite = _sprite = new SpriteMap(DuckUtils.GetAsset("hats/brekotkin_satanic.png"), 32, 32);
             _editorName = "Satanic Brekotkin Hat";

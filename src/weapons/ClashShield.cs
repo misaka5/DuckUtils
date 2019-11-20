@@ -86,6 +86,8 @@ namespace DuckGame.DuckUtils {
             ammo = 99;
             thickness = 8.9f;
             weight = 9f;
+            bouncy = 0.3f;
+
             center = new Vec2(16f, 18f);
             collisionOffset = new Vec2(-5f, -18f);
             collisionSize = new Vec2(15f, 27f);
@@ -117,31 +119,32 @@ namespace DuckGame.DuckUtils {
             if(offDir > 0 && from == ImpactedFrom.Right) {
                 with.SolidImpact(this, ImpactedFrom.Left);
                 if (with.destroyed) return;
-                
-                with.x = right + (with.x - with.left);
                 SolidImpact(with, from);
 
                 if (with.hSpeed < 0)
                 {
+                    with.x = right + (with.x - with.left);
                     with.hSpeed = -with.hSpeed * with.bouncy;
                     if (Math.Abs(with.hSpeed) < 0.1f) with.hSpeed = 0f;
-                }
 
+                    if(with is PhysicsObject) (with as PhysicsObject).sleeping = false;
+                }
+                
                 if(with is Gun) (with as Gun).PressAction();
             }
 
             if(offDir < 0 && from == ImpactedFrom.Left) {
                 with.SolidImpact(this, ImpactedFrom.Right);
                 if (with.destroyed) return;
-
-                with.x = left + (with.x - with.right);
 			    SolidImpact(with, from);
 
                 if (with.hSpeed > 0)
                 {
+                    with.x = left + (with.x - with.right);
                     with.hSpeed = -with.hSpeed * with.bouncy;
-                    if (Math.Abs(with.hSpeed) < 0.1f)
-                        with.hSpeed = 0f;
+                    if (Math.Abs(with.hSpeed) < 0.1f) with.hSpeed = 0f;
+
+                    if(with is PhysicsObject) (with as PhysicsObject).sleeping = false;
                 }
 
                 if(with is Gun) (with as Gun).PressAction();

@@ -16,6 +16,7 @@ namespace DuckGame.DuckUtils {
         private Sound sound;
 
         public StateBinding PlayingBinding { get; private set; }
+        public StateBinding TimerBinding { get; private set; }
 
         private bool _playing;
         public bool Playing {
@@ -36,6 +37,7 @@ namespace DuckGame.DuckUtils {
 
         public ImStuffHat(float x, float y) : base(x, y) {
             PlayingBinding = new StateBinding("Playing");
+            TimerBinding = new StateBinding("Timer");
 
             _sprite = new SpriteMap(DuckUtils.GetAsset("hats/imstuff.png"), 129, 153);
             sound = SFX.Get(DuckUtils.GetAsset("sounds/imstuff.wav"), 1f, 0f, 0f, false);

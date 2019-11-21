@@ -96,7 +96,7 @@ namespace DuckGame.DuckUtils {
             _barrelOffsetTL = new Vec2(23f, 12f);
         }
 
-        public override void Impact(MaterialThing with, ImpactedFrom from, bool solidImpact)
+        public override void Impact(MaterialThing with, ImpactedFrom from, bool solid)
         {
             if(from == ImpactedFrom.Top) { 
                 with.SolidImpact(this, ImpactedFrom.Left);
@@ -121,7 +121,7 @@ namespace DuckGame.DuckUtils {
                 if (with.destroyed) return;
                 SolidImpact(with, from);
 
-                if (with.hSpeed < 0)
+                if (with.hSpeed < 0.1f)
                 {
                     with.x = right + (with.x - with.left);
                     with.hSpeed = -with.hSpeed * with.bouncy;
@@ -138,7 +138,7 @@ namespace DuckGame.DuckUtils {
                 if (with.destroyed) return;
 			    SolidImpact(with, from);
 
-                if (with.hSpeed > 0)
+                if (with.hSpeed > 0.1f)
                 {
                     with.x = left + (with.x - with.right);
                     with.hSpeed = -with.hSpeed * with.bouncy;
@@ -150,7 +150,7 @@ namespace DuckGame.DuckUtils {
                 if(with is Gun) (with as Gun).PressAction();
             }
 
-            base.Impact(with, from, solidImpact);
+            base.Impact(with, from, solid);
         }
 
         public override bool Hit(Bullet bullet, Vec2 hitPos)

@@ -14,7 +14,7 @@ namespace DuckGame.DuckUtils {
         public readonly SpriteMap spriteMap;
 
 		private NetSoundEffect storeSound;
-		public NetSoundBinding SoundBinding { get; private set; }
+		public StateBinding SoundBinding { get; private set; }
         
         public MP5Imbalance(float xval, float yval)
             : base(xval, yval)

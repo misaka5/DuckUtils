@@ -23,7 +23,7 @@ namespace DuckGame.DuckUtils {
 
         public StateBinding PlayBinding { get; private set; }
 
-        public NetSoundBinding SoundBinding { get; private set; }
+        public StateBinding SoundBinding { get; private set; }
 
         private SpriteMap sprite;
 

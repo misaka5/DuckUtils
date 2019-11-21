@@ -9,9 +9,10 @@ namespace DuckGame.DuckUtils
             base.OnPostInitialize();
 
             if(configuration.isWorkshop) {
-                DevConsole.Log("DuckUtils has been loaded as a workshop mod", Color.Purple);
+                DevConsole.Log(DCSection.Mod, "|DGYELLOW|DuckUtils has been loaded as a |DGPURPLE|workshop|DGYELLOW| mod");
+                DevConsole.Log(DCSection.Mod, "|DGYELLOW|Mod's GitHub page: |DGPURPLE|https://github.com/misaka5/DuckUtils");
             } else {
-                DevConsole.Log("DuckUtils has been loaded as a local mod", Color.Yellow);
+                DevConsole.Log(DCSection.Mod, "|DGYELLOW|DuckUtils has been loaded as a |DGGREEN|local|DGYELLOW| mod");
             }
         }
 

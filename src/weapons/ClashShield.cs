@@ -99,7 +99,7 @@ namespace DuckGame.DuckUtils {
         public override void Impact(MaterialThing with, ImpactedFrom from, bool solid)
         {
             if(from == ImpactedFrom.Top) { 
-                with.SolidImpact(this, ImpactedFrom.Left);
+                with.SolidImpact(this, ImpactedFrom.Bottom);
                 if (with.destroyed) return;
                 SolidImpact(with, from);
 

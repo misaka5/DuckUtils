@@ -27,22 +27,25 @@ namespace DuckGame.DuckUtils
         protected override void CreateExplosion(Vec2 pos) {
             float x = pos.x;
             float y = pos.y - 2f;
-            Level.Add(new Frog(x, y, Rando.Double() < 0.5f));
+            
+            if(isServerForObject) {
+                Level.Add(new Frog(x, y, Rando.Double() < 0.5f));
 
-            int amount = Rando.Int(2, 4);
-            for (int i = 0; i < amount; i++)
-            {
-                float deg = (float)i * 360f / amount + Rando.Float(-10f, 10f);
-                float rad = Maths.DegToRad(deg);
+                int amount = Rando.Int(2, 4);
+                for (int i = 0; i < amount; i++)
+                {
+                    float deg = (float)i * 360f / amount + Rando.Float(-10f, 10f);
+                    float rad = Maths.DegToRad(deg);
 
-                float xDir = (float)Math.Cos(rad);
-                float yDir = (float)Math.Sin(rad);
+                    float xDir = (float)Math.Cos(rad);
+                    float yDir = (float)Math.Sin(rad);
 
-                Frog thing = new Frog(x, y, xDir > 0);
-                thing.hSpeed = xDir * 3;
-                thing.vSpeed = yDir * yDir * -3 - 2;
-                
-                Level.Add(thing);
+                    Frog thing = new Frog(x, y, xDir > 0);
+                    thing.hSpeed = xDir * 3;
+                    thing.vSpeed = yDir * yDir * -3 - 2;
+                    
+                    Level.Add(thing);
+                }
             }
 
             for(int i = 0; i < 3; i++)

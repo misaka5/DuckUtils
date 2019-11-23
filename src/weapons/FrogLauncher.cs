@@ -146,15 +146,16 @@ namespace DuckGame.DuckUtils {
         public override void Fire() {
             SFX.Play(DuckUtils.GetAsset("sounds/pop.wav"));
 
-            Vec2 barrel = Offset(barrelOffset);
-            float radians = barrelAngle + Rando.Float(-0.1f, 0.1f);
-            Vec2 velocity = Maths.AngleToVec(radians) * 10f;
+            if(isServerForObject) {
+                Vec2 barrel = Offset(barrelOffset);
+                float radians = barrelAngle + Rando.Float(-0.1f, 0.1f);
+                Vec2 velocity = Maths.AngleToVec(radians) * 10f;
             
-            Frog frog = new Frog(barrel.x, barrel.y, velocity.x > 0);
-            Fondle(frog);
-            frog.hSpeed = velocity.x;
-            frog.vSpeed = velocity.y;
-            Level.Add(frog);
+                Frog frog = new Frog(barrel.x, barrel.y, velocity.x > 0);
+                frog.hSpeed = velocity.x;
+                frog.vSpeed = velocity.y;
+                Level.Add(frog);
+            }
         }
 
         public override void Draw() {

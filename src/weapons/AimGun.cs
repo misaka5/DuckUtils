@@ -13,7 +13,7 @@ namespace DuckGame.DuckUtils {
     {
         public static readonly int MaxAmmo = 8;
         public static readonly float ReloadingDuration = 0.3f;
-        public static readonly float LaunchSpeed = 14f;
+        public static readonly float LaunchSpeed = 9f;
 
         public StateBinding LoadProgressBinding { get; private set; }
         public StateBinding ReloadBinding { get; private set; }
@@ -153,7 +153,7 @@ namespace DuckGame.DuckUtils {
                 DrawPath(path, new Vec2(0, 0), Color.Red, 1f, depth + 2);
 
                 if(path.Target != null) {
-                    DrawStringShadowed(path.Target.GetType().Name, new Vec2(x, y - 20), depth + 1, 0.8f);
+                    DrawStringShadowed(path.Target.editorName, new Vec2(x, y - 20), depth + 1, 0.8f);
                     DrawStringShadowed((int)(path.Length / 8) + "m", new Vec2(x, y - 12), depth + 1, 0.4f);
                 }
             }

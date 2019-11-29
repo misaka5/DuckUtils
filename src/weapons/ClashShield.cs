@@ -50,6 +50,19 @@ namespace DuckGame.DuckUtils {
             }
         }
 
+        private float HorizontalVelocity {
+            get {
+                return owner == null ? hSpeed : owner.hSpeed;
+            }
+
+            set {
+                if(owner == null)
+                    hSpeed = value;
+                else
+                    owner.hSpeed = value;
+            }
+        }
+
         private bool LowCharge { get; set; }
 
         private float charge = ShieldMaxCharge;
@@ -86,7 +99,7 @@ namespace DuckGame.DuckUtils {
             ammo = 99;
             thickness = 8.9f;
             weight = 9f;
-            bouncy = 0.3f;
+            bouncy = 0.1f;
 
             center = new Vec2(16f, 18f);
             collisionOffset = new Vec2(-5f, -18f);
@@ -98,56 +111,67 @@ namespace DuckGame.DuckUtils {
 
         public override void Impact(MaterialThing with, ImpactedFrom from, bool solid)
         {
-            if(from == ImpactedFrom.Top) { 
-                with.SolidImpact(this, ImpactedFrom.Bottom);
-                if (with.destroyed) return;
-                SolidImpact(with, from);
+            if(with == owner) return;
+            if(with is PhysicsObject) {
+                if(from == ImpactedFrom.Top) { 
+                    with.SolidImpact(this, ImpactedFrom.Bottom);
+                    if (with.destroyed) return;
+                    SolidImpact(with, from);
 
-                if (offDir > 0 && with.hSpeed < 2f)
-                {
-                    with.hSpeed = 2f;
+                    if (offDir > 0 && with.hSpeed < 2f)
+                    {
+                        with.hSpeed = 2f;
+                    }
+
+                    if (offDir < 0 && with.hSpeed > -2f)
+                    {
+                        with.hSpeed = -2f;
+                    }
+
+                    if(with is Gun) (with as Gun).PressAction();
                 }
 
-                if (offDir < 0 && with.hSpeed > -2f)
-                {
-                    with.hSpeed = -2f;
+                if(offDir > 0 && from == ImpactedFrom.Right) {
+                    with.SolidImpact(this, ImpactedFrom.Left);
+                    if (with.destroyed) return;
+                    SolidImpact(with, from);
+
+                    float relVel = with.hSpeed - HorizontalVelocity;
+                    if (relVel < 0.1f)
+                    {
+                        with.x = right + (with.x - with.left);
+                        with.hSpeed = -relVel * with.bouncy;
+                        HorizontalVelocity = relVel * bouncy; 
+
+                        if (Math.Abs(with.hSpeed) < 0.1f) with.hSpeed = 0f;
+                        if(Math.Abs(HorizontalVelocity) < 0.1f) HorizontalVelocity = 0f;
+
+                        if(with is PhysicsObject) (with as PhysicsObject).sleeping = false;
+                    }
+                    
+                    if(with is Gun) (with as Gun).PressAction();
                 }
 
-                if(with is Gun) (with as Gun).PressAction();
-            }
+                if(offDir < 0 && from == ImpactedFrom.Left) {
+                    with.SolidImpact(this, ImpactedFrom.Right);
+                    if (with.destroyed) return;
+                    SolidImpact(with, from);
 
-            if(offDir > 0 && from == ImpactedFrom.Right) {
-                with.SolidImpact(this, ImpactedFrom.Left);
-                if (with.destroyed) return;
-                SolidImpact(with, from);
+                    float relVel = with.hSpeed - HorizontalVelocity;
+                    if (relVel > 0.1f)
+                    {
+                        with.x = left + (with.x - with.right);
+                        with.hSpeed = -relVel * with.bouncy;
+                        HorizontalVelocity = relVel * bouncy; 
 
-                if (with.hSpeed < 0.1f)
-                {
-                    with.x = right + (with.x - with.left);
-                    with.hSpeed = -with.hSpeed * with.bouncy;
-                    if (Math.Abs(with.hSpeed) < 0.1f) with.hSpeed = 0f;
+                        if (Math.Abs(with.hSpeed) < 0.1f) with.hSpeed = 0f;
+                        if(Math.Abs(HorizontalVelocity) < 0.1f) HorizontalVelocity = 0f;
 
-                    if(with is PhysicsObject) (with as PhysicsObject).sleeping = false;
+                        if(with is PhysicsObject) (with as PhysicsObject).sleeping = false;
+                    }
+
+                    if(with is Gun) (with as Gun).PressAction();
                 }
-                
-                if(with is Gun) (with as Gun).PressAction();
-            }
-
-            if(offDir < 0 && from == ImpactedFrom.Left) {
-                with.SolidImpact(this, ImpactedFrom.Right);
-                if (with.destroyed) return;
-			    SolidImpact(with, from);
-
-                if (with.hSpeed > 0.1f)
-                {
-                    with.x = left + (with.x - with.right);
-                    with.hSpeed = -with.hSpeed * with.bouncy;
-                    if (Math.Abs(with.hSpeed) < 0.1f) with.hSpeed = 0f;
-
-                    if(with is PhysicsObject) (with as PhysicsObject).sleeping = false;
-                }
-
-                if(with is Gun) (with as Gun).PressAction();
             }
 
             base.Impact(with, from, solid);
@@ -207,6 +231,8 @@ namespace DuckGame.DuckUtils {
         public override void Update()
         {
             angle = 0;
+            solid = true;
+
             if(duck != null) duck._disarmDisable = 2;
 
             if(Active) {

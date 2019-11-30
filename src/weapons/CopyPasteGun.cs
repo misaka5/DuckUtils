@@ -14,7 +14,6 @@ namespace DuckGame.DuckUtils {
         public static readonly float CopyRange = 200f;
         public static readonly float SwitchTime = 0.8f;
 
-        public StateBinding ActiveBinding { get; private set; }
         public StateBinding SoundBinding { get; private set; }
 
         private float progress = 0;
@@ -49,8 +48,6 @@ namespace DuckGame.DuckUtils {
         public CopyPasteGun(float xval, float yval)
             : base(xval, yval)
         {
-            ActiveBinding = new StateBinding("Active");
-
             _bio = "owo";
             _editorName = "Copy Paster";
 

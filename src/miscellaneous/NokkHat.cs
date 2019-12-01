@@ -54,8 +54,21 @@ namespace DuckGame.DuckUtils {
                 }
             }
 
+            private float TargetHiddenAlpha {
+                get {
+                    if(Thing.isServerForObject) return 0.5f;
+
+                    float speed = Math.Abs(Thing.hSpeed) + Math.Abs(Thing.vSpeed);
+                    if(speed > 5) speed = 5;
+                    speed /= 5;
+
+                    return speed * 0.249f + 0.001f;
+                }
+            }
+
             public HiddenState(Thing t) {
                 Thing = t;
+                targetAlpha = Thing.alpha;
             }
 
             private void Update() {
@@ -68,12 +81,13 @@ namespace DuckGame.DuckUtils {
                     lastState = Hidden;
                 }
 
+                if(Hidden) targetAlpha = TargetHiddenAlpha;
                 Thing.alpha += (targetAlpha - Thing.alpha) * 0.1f;
             }
 
             private void Hide() {
-                prevAlpha = Thing.alpha;
-                targetAlpha = Thing.isServerForObject ? 0.5f : 0.01f;
+                prevAlpha = targetAlpha;
+                targetAlpha = TargetHiddenAlpha;
                 if(!Thing.isServerForObject) {
                     FollowCam cam = Level.current.camera as FollowCam;
                     if(cam != null) cam.Remove(Thing);

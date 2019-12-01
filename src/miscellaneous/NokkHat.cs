@@ -27,6 +27,8 @@ namespace DuckGame.DuckUtils {
             }
 
             public static void MarkAsHidden(Thing thing) {
+                if(thing == null) return;
+
                 HiddenState state = null;
                 if(!states.TryGetValue(thing, out state))
                 {
@@ -106,9 +108,6 @@ namespace DuckGame.DuckUtils {
         public static readonly float Capacity = 8f;
 
         public StateBinding ActiveBinding { get; private set; }
-        public StateBinding StartSoundBinding { get; private set; }
-        public StateBinding EndSoundBinding { get; private set; }
-
         private bool activated = false;
         public bool Active { 
             get {
@@ -164,11 +163,10 @@ namespace DuckGame.DuckUtils {
                 if(netEquippedDuck != null) {
                     HiddenState.MarkAsHidden(netEquippedDuck);
                     foreach(Equipment eq in netEquippedDuck._equipment) {
-                        if(eq != null) HiddenState.MarkAsHidden(eq);
+                        HiddenState.MarkAsHidden(eq);
                     }
 
-                    if(netEquippedDuck.holdObject != null)
-                        HiddenState.MarkAsHidden(netEquippedDuck.holdObject);
+                    HiddenState.MarkAsHidden(netEquippedDuck.holdObject);
                 }
             }
 

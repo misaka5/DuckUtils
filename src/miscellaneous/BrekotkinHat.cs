@@ -34,6 +34,8 @@ namespace DuckGame.DuckUtils {
             sound = SFX.Get(DuckUtils.GetAsset("sounds/disco_ebalo.wav"), 1f, 0f, 0f, true);
         }
         
+        public override void Quack(float volume, float pitch) {}
+
         public override void OpenHat() 
         {
             Playing = true;

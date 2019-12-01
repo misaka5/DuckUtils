@@ -45,6 +45,8 @@ namespace DuckGame.DuckUtils {
             sound = SFX.Get(DuckUtils.GetAsset("sounds/umri.wav"), 1f, 0f, 0f, false);
         }
 
+        public override void Quack(float volume, float pitch) {}
+
         public override void OpenHat() {
             Playing = true;
         }

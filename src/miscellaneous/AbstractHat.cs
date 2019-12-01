@@ -11,8 +11,6 @@ namespace DuckGame.DuckUtils {
 
         public AbstractHat(float x, float y) : base(x, y) {}
 
-        public override void Quack(float volume, float pitch) {}
-
         public override void OpenHat() {}
 	    public override void CloseHat() {}
 

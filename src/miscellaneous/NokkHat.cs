@@ -1,0 +1,164 @@
+using DuckGame;
+using System;
+using System.Collections.Generic;
+
+namespace DuckGame.DuckUtils {
+
+    [EditorGroup("duckutils|equipment")]
+    public class NokkHat : AbstractHat
+    {
+        public class HiddenState {
+
+            static HiddenState() {
+                DuckUtils.Updated += (e, args) => UpdateAll();
+                DuckUtils.LevelChanged += (e, args) => Clear();
+            }
+
+            private static readonly IDictionary<Thing, HiddenState> states = new Dictionary<Thing, HiddenState>();
+        
+            private static void Clear() {
+                states.Clear();
+            }
+
+            private static void UpdateAll() {
+                foreach(KeyValuePair<Thing, HiddenState> p in states) {
+                    p.Value.Update();
+                }
+            }
+
+            public static void MarkAsHidden(Thing thing) {
+                HiddenState state = null;
+                if(!states.TryGetValue(thing, out state))
+                {
+                    state = new HiddenState(thing);
+                    states.Add(thing, state);
+                }
+
+                state.Hidden = true;
+            }
+
+            private int ttl;
+            private bool lastState = false;
+
+            private float prevAlpha;
+            private float targetAlpha;
+
+            public Thing Thing { get; set; }
+            public bool Hidden {
+                get {
+                    return ttl > 0;
+                }
+
+                set {
+                    ttl = value ? 2 : 0;
+                }
+            }
+
+            public HiddenState(Thing t) {
+                Thing = t;
+            }
+
+            private void Update() {
+                if(Thing.removeFromLevel) return;
+
+                ttl--;
+                if(lastState != Hidden) {
+                    if(Hidden) Hide();
+                    else Show();
+                    lastState = Hidden;
+                }
+
+                Thing.alpha += (targetAlpha - Thing.alpha) * 0.1f;
+            }
+
+            private void Hide() {
+                prevAlpha = Thing.alpha;
+                targetAlpha = Thing.isServerForObject ? 0.5f : 0.01f;
+                if(!Thing.isServerForObject) {
+                    FollowCam cam = Level.current.camera as FollowCam;
+                    if(cam != null) cam.Remove(Thing);
+                }
+            }
+
+            private void Show() {
+                targetAlpha = prevAlpha;
+                if(!Thing.isServerForObject) {
+                    FollowCam cam = Level.current.camera as FollowCam;
+                    if(cam != null) cam.Add(Thing);
+                }
+            }
+        }
+
+        public static readonly float Capacity = 8f;
+
+        public StateBinding ActiveBinding { get; private set; }
+        public StateBinding StartSoundBinding { get; private set; }
+        public StateBinding EndSoundBinding { get; private set; }
+
+        private bool activated = false;
+        public bool Active { 
+            get {
+                return activated;
+            }
+
+            set {
+                if(activated != value) {
+                    if(value) {
+                        SFX.Play(DuckUtils.GetAsset("sounds/nokk_start.wav"));
+                        sound.Play();
+                    } else {
+                        sound.Stop();
+                        SFX.Play(DuckUtils.GetAsset("sounds/nokk_end.wav"));
+                    }
+
+                    activated = value;
+                }
+            }
+        }
+
+        public float Charge { get; private set; }
+
+        private Sound sound;
+
+        public NokkHat(float x, float y) : base(x, y) {
+            _editorName = "Nokk Hat";
+
+            graphic = _pickupSprite = _sprite = new SpriteMap(DuckUtils.GetAsset("hats/nokk.png"), 32, 32);
+            Charge = Capacity;
+
+            center = new Vec2(16f, 24f);
+
+            sound = SFX.Get(DuckUtils.GetAsset("sounds/nokk_noise.wav"), 1f, 0f, 0f, true);
+            ActiveBinding = new StateBinding("Active");
+        }
+
+        public override void Quack(float volume, float pitch) {
+            if(!Active && Charge >= Capacity) Active = true;
+            else base.Quack(volume, pitch);
+        }
+
+        public override void Update() {
+            if(Active) {
+                if(Charge > 0) Charge -= Maths.IncFrameTimer();
+                else Active = false;
+            } else {
+                if(Charge < Capacity) Charge += Maths.IncFrameTimer();
+            }
+
+            if(Active) {
+                HiddenState.MarkAsHidden(this);
+                if(netEquippedDuck != null) {
+                    HiddenState.MarkAsHidden(netEquippedDuck);
+                    foreach(Equipment eq in netEquippedDuck._equipment) {
+                        if(eq != null) HiddenState.MarkAsHidden(eq);
+                    }
+
+                    if(netEquippedDuck.holdObject != null)
+                        HiddenState.MarkAsHidden(netEquippedDuck.holdObject);
+                }
+            }
+
+            base.Update();
+        }
+    }
+}

@@ -1,97 +1,86 @@
 using DuckGame;
 using System;
 
+//author: zumaster
 namespace DuckGame.DuckUtils {
 
     [EditorGroup("duckutils")]
-    [BaggedProperty("isInDemo", true)]
+	[BaggedProperty("isInDemo", true)]
     [BaggedProperty("isFatal", true)]
     public class DubstepGun : Gun
     {
-        private static readonly float[] LoopTimings = { 3.38f, 3.96f, 4.39f, 4.82f, 5.28f, 5.87f, 6.47f, 6.97f, 7.39f, 7.69f, 8.25f, 8.66f, 9.07f, 9.53f, 9.75f, 10f, 10.39f, 10.81f, 11.23f, 11.46f, 11.81f, 12.13f, 12.54f, 13.85f, 14.64f, 15.11f, 15.56f, 16.35f, 16.78f, 17.19f, 17.64f, 18.09f, 18.91f, 19.53f, 20.19f, 20.67f, 21.09f, 21.48f, 21.71f, 21.94f, 22.39f, 22.78f, 23.25f, 23.63f, 23.78f, 24.11f, 24.53f, 24.73f, 24.96f, 25.39f, 25.82f, 26.19f, 26.64f, 26.89f, 27.09f, 27.31f };
-        
-        public StateBinding PlayBinding { get; private set; }
+        public readonly SpriteMap spriteMap;
 
-        private SpriteMap sprite;
-
-        private LoopData loop = new LoopData(LoopTimings);
-
-        private Sound sound;
-
-        private bool _playing;
-        public bool Playing {
+		public StateBinding ActiveBinding { get; private set; }
+		
+        private bool playing = false;
+        public bool Active {
             get {
-                return _playing;
+                return playing;
             }
 
             set {
-                if(value != _playing) {
+                if(value != playing) {
                     if(value) sound.Play();
                     else sound.Stop();
-                    _playing = value;
+                    playing = value;
                 }
             }
         }
 
+		private Sound sound;
+        
         public DubstepGun(float xval, float yval)
             : base(xval, yval)
         {
-            PlayBinding = new StateBinding("Playing");
+			ammo = 60 + Rando.Int(-50, 10);
+			_ammoType = new ATMissile();
 
+			_type = "gun";
+			_editorName = "Dubstep Gun";
             _bio = "Plays generic dubstep loop and destroys everything";
-            _editorName = "Dubstep Gun";
 
-            ammo = LoopTimings.Length + Rando.Int(-5, 5);
-            _ammoType = new ATGrenade();
-            _type = "gun";
+			graphic = spriteMap = new SpriteMap(DuckUtils.GetAsset("weapons/dubstep_gun.png"), 32, 16);
+			spriteMap.AddAnimation("active", 0.1f, true, 1, 0, 2, 0, 3, 0, 4, 0);
+			spriteMap.AddAnimation("idle", 0.1f, true, 0);
 
-            sprite = new SpriteMap(DuckUtils.GetAsset("weapons/dubstep_gun.png"), 16, 16);
-            sprite.AddAnimation("anim", Maths.IncFrameTimer() * 4f, true, 0, 1, 2, 3);
-            sprite.SetAnimation("anim");
-            graphic = sprite;
-            center = new Vec2(8f, 10f);
+			center = new Vec2(8f, 4f);
+			collisionOffset = new Vec2(-8f, 0f);
+			collisionSize = new Vec2(16f, 10f);
+			_barrelOffsetTL = new Vec2(20f, 8f);
+			_fullAuto = true;
+			_fireWait = 1.75f;
+			_kickForce = 0.6f;
+			_holdOffset = new Vec2(0f, -5f);
+            _fireSound = "";
 
-            sound = SFX.Get(DuckUtils.GetAsset("sounds/dubstep_sample.wav"), 1f, 0f, 0f, false);
-
-            collisionOffset = new Vec2(-8f, -6f);
-            collisionSize = new Vec2(16f, 11f);
-            _barrelOffsetTL = new Vec2(16f, 6f);
-            _fireSound = "pistolFire";
-            _kickForce = 3f;
-            _holdOffset = new Vec2(-1f, 0f);
-            loseAccuracy = 0.1f;
-            maxAccuracyLost = 1f;
-            physicsMaterial = PhysicsMaterial.Metal;
+			sound = SFX.Get(DuckUtils.GetAsset("sounds/dubstep_sample.wav"), 1f, 0f, 0f, true);
+        
+            ActiveBinding = new StateBinding("Active");
         }
 
-        public override void OnPressAction() {
-            Playing = true;
-        }
+		public override void OnPressAction()
+		{
+			Active = true;
+		}
 
-        public override void OnReleaseAction() {
-            Playing = false;
-            loop.Reset();
-        }
+		public override void OnReleaseAction()
+		{
+			Active = false;
+		}
+        
+		public override void Update() 
+        {
+			base.Update();
 
-        private void Explode() {
-            Explosion.Create(this, position);
-            Playing = false;
-        }
+            spriteMap.SetAnimation(Active ? "active" : "idle");
 
-        public override void OnHoldAction() {
-            if(ammo == 0) {
-                Explode();
-                return;
-            }
-
-            switch(loop.Add(Maths.IncFrameTimer())) {
-                case LoopDataResult.Fire: base.Fire(); break;
-                case LoopDataResult.End: 
-                    Explode();
-                    break;
-                default: break;
-            }
-        }
+			if (ammo == 0)
+			{
+                Active = false;
+				Explosion.Create(this, position);
+				Level.Remove(this);
+			}
+		}
     }
 }
-

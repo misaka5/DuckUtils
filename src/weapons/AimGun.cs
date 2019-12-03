@@ -17,6 +17,7 @@ namespace DuckGame.DuckUtils {
 
         public StateBinding LoadProgressBinding { get; private set; }
         public StateBinding ReloadBinding { get; private set; }
+        public StateBinding FireSoundBinding { get; private set; }
 
         private float loadProgress = ReloadingDuration;
 
@@ -35,6 +36,7 @@ namespace DuckGame.DuckUtils {
         }
 
         private Sprite loaderSprite;
+        private NetSoundEffect sound;
 
         private IntegratedPath path = new IntegratedPath();
 
@@ -63,12 +65,15 @@ namespace DuckGame.DuckUtils {
 
             loaderSprite = new Sprite(DuckUtils.GetAsset("weapons/aimgun_loader.png"));
             loaderSprite.center = new Vec2(8f, 8f);
+
+            sound = new NetSoundEffect(_fireSound);
+            FireSoundBinding = new NetSoundBinding("sound");
         }
 
         private void Launch() {
-            SFX.Play(_fireSound);
-
             if(isServerForObject) {
+                sound.Play();
+
                 EnergySphere sphere = new EnergySphere(barrelPosition.x, barrelPosition.y, owner);
                 Vec2 vel = barrelVector * LaunchSpeed;
                 

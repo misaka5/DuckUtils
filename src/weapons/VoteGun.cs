@@ -60,7 +60,7 @@ namespace DuckGame.DuckUtils {
             _type = "gun";
 
             sprite = new SpriteMap(DuckUtils.GetAsset("weapons/dubstep_gun.png"), 16, 16);
-            sprite.AddAnimation("anim", Maths.IncFrameTimer() * 4f, true, 0, 1, 2, 3);
+            sprite.AddAnimation("anim", Maths.IncFrameTimer() * 4f, true, 0, 2, 4, 6);
             sprite.SetAnimation("anim");
             graphic = sprite;
             center = new Vec2(8f, 10f);

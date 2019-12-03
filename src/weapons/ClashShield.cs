@@ -204,7 +204,7 @@ namespace DuckGame.DuckUtils {
             }
 
             Vec2 hit;
-            IAmADuck duck = Level.current.CollisionRay<IAmADuck>(barrelPosition, barrelPosition + barrelVector * ZapRange, out hit);
+            IAmADuck duck = Level.CheckRay<IAmADuck>(barrelPosition, barrelPosition + barrelVector * ZapRange, out hit);
 
             Duck current = duck.ToDuck();
             if(current != null) {

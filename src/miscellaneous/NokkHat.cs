@@ -162,11 +162,16 @@ namespace DuckGame.DuckUtils {
                 HiddenState.MarkAsHidden(this);
                 if(netEquippedDuck != null) {
                     HiddenState.MarkAsHidden(netEquippedDuck);
-                    foreach(Equipment eq in netEquippedDuck._equipment) {
+                    HiddenState.MarkAsHidden(netEquippedDuck.holdObject);
+
+                    HiddenState.MarkAsHidden(netEquippedDuck._ragdollInstance);
+					HiddenState.MarkAsHidden(netEquippedDuck._trappedInstance);
+					HiddenState.MarkAsHidden(netEquippedDuck._cookedInstance);
+
+                    foreach(Equipment eq in netEquippedDuck._equipment) 
+                    {
                         HiddenState.MarkAsHidden(eq);
                     }
-
-                    HiddenState.MarkAsHidden(netEquippedDuck.holdObject);
                 }
             }
 

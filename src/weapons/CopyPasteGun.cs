@@ -63,7 +63,7 @@ namespace DuckGame.DuckUtils {
             center = new Vec2(8f, 8f);
             collisionOffset = new Vec2(-8f, -8f);
             collisionSize = new Vec2(16f, 16f);
-            _barrelOffsetTL = new Vec2(24f, 4f);
+            _barrelOffsetTL = new Vec2(24f, 8f);
             //_fireSound = DuckUtils.GetAsset("sounds/copypaste_fire.wav");
             _kickForce = 0.2f;
             handOffset = new Vec2(0f, -1f);
@@ -99,6 +99,15 @@ namespace DuckGame.DuckUtils {
         private static Holdable CreateCopy(Holdable h) {
             Holdable n = (Holdable)Editor.CreateThing(h.GetType()); 
             CloneObjectParameters(h.GetType(), h, n);
+
+            if(h is TeamHat) {
+                TeamHat hat = (TeamHat)h;
+
+                hat.graphic = hat.sprite = ((TeamHat)n).sprite.CloneMap();
+			    hat.team = ((TeamHat)n).team;
+			    hat.pickupSprite = ((TeamHat)n).pickupSprite.Clone();
+            }
+
             return n;
         }
 
@@ -165,23 +174,45 @@ namespace DuckGame.DuckUtils {
             Active = true;
         }
 
-        private void DrawSprite(Sprite spr, Vec2 pos, float alpha, int d = 1) {
-            spr.flipH = graphic.flipH;
-	        spr.angle = angle;
-	        spr.alpha = alpha;
-	        spr.depth = depth + d;
-	        spr.scale = scale;
-            spr.center = pos;
+        //ultimate hack (kosteel)
+        private void DrawThing(Thing spr, float alpha, int d = 1) {
+            Vec2 cpos = spr.position;
+            float calpha = spr.alpha;
+            float cangle = spr.angle;
+            Depth cdepth = spr.depth;
+            bool cfliph = spr.graphic == null ? false : spr.graphic.flipH;
+            Vec2 cscale = spr.scale;
 
-            Graphics.Draw(spr, x, y);
+            if(spr.graphic != null) spr.graphic.flipH = graphic.flipH;
+            spr.scale = scale;
+            spr.depth = depth + d;
+            spr.angle = angle;
+            spr.alpha = alpha;
+            spr.position = position;
+
+            spr.Draw();
+
+            if(spr.graphic != null) spr.graphic.flipH = cfliph;
+            spr.scale = cscale;
+            spr.depth = cdepth;
+            spr.angle = cangle;
+            spr.alpha = calpha;
+            spr.position = cpos;
         }
 
+        private bool drawingSelected;
         public override void Draw()
         {
-            UpdateSprites();
+            if(drawingSelected) {
+                base.Draw();
+                return;
+            }
 
-            DrawSprite(CurrentSprite.graphic, CurrentSprite.center, 1 - time, 1);
-            DrawSprite(NextSprite.graphic, NextSprite.center, time, 2);
+            drawingSelected = true;
+            UpdateSprites();
+            DrawThing(CurrentSprite, 1 - time, 0);
+            DrawThing(NextSprite, time, 1);
+            drawingSelected = false;
 
             if(isServerForObject) {
                 if (Selected != null && owner != null) {

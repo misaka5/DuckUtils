@@ -125,6 +125,7 @@ namespace DuckGame.DuckUtils {
                     }
 
                     activated = value;
+                    DevConsole.Log("NOKK UPDATE: " + value, Color.Red);
                 }
             }
         }

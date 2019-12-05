@@ -18,5 +18,11 @@ namespace DuckGame.DuckUtils {
                 return null;
             return duck;
         }
+
+        public static bool IsKeyPressed(this Duck duck, string key) {
+            return duck != null && 
+                   duck.inputProfile != null && 
+                   duck.inputProfile.Pressed(key, false);
+        }
     }
 }

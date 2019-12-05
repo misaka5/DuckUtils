@@ -147,19 +147,13 @@ namespace DuckGame.DuckUtils {
             ActiveBinding = new StateBinding("Active");
         }
 
-        public override void Quack(float volume, float pitch) {
-            DevConsole.Log("NOKK QUACK: IN METHOD", Color.Green);
-            if(!Active && Charge >= Capacity) {
-                DevConsole.Log("NOKK QUACK: PRECONDITION PASSED", Color.Green);
-                if(isServerForObject) {
-                    DevConsole.Log("NOKK QUACK: NET CONDITION PASSED", Color.Green);
+        public override void Update() {
+            if(IsPressed("QUACK")) {
+                if(isServerForObject && !Active && Charge >= Capacity) {
                     Active = true;
                 }
             }
-            else base.Quack(volume, pitch);
-        }
 
-        public override void Update() {
             if(Active) {
                 if(Charge > 0) Charge -= Maths.IncFrameTimer();
                 else Active = false;

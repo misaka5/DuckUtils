@@ -40,6 +40,10 @@ namespace DuckGame.DuckUtils {
             base.Update();
         }
 
+        protected bool IsPressed(string key) {
+            return netEquippedDuck.IsKeyPressed(key);
+        }
+
         public override void HeatUp(Vec2 location)
         {
             if (duck == null)

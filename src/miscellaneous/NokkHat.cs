@@ -65,7 +65,7 @@ namespace DuckGame.DuckUtils {
                     if(speed > 5) speed = 5;
                     speed /= 5;
 
-                    return speed * 0.249f + 0.001f;
+                    return speed * 0.209f + 0.001f;
                 }
             }
 

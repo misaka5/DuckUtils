@@ -96,19 +96,21 @@ namespace DuckGame.DuckUtils {
             }
         }
 
-        private static Holdable CreateCopy(Holdable h) {
-            Holdable n = (Holdable)Editor.CreateThing(h.GetType()); 
-            CloneObjectParameters(h.GetType(), h, n);
+        private static Holdable CreateCopy(Holdable source) {
+            Type type = source.GetType();
+            Holdable result = (Holdable)Editor.CreateThing(type); 
+            CloneObjectParameters(type, source, result);
 
-            if(h is TeamHat) {
-                TeamHat hat = (TeamHat)h;
+            if(source is TeamHat) {
+                TeamHat hat = (TeamHat)result;
+                TeamHat hatSource = (TeamHat)source;
 
-                hat.graphic = hat.sprite = ((TeamHat)n).sprite.CloneMap();
-			    hat.team = ((TeamHat)n).team;
-			    hat.pickupSprite = ((TeamHat)n).pickupSprite.Clone();
+                hat.graphic = hat.sprite = hatSource.sprite.CloneMap();
+			    hat.team = hatSource.team;
+			    hat.pickupSprite = hatSource.pickupSprite.Clone();
             }
 
-            return n;
+            return result;
         }
 
         private void Copy(Holdable h) {

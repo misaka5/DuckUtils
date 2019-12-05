@@ -93,12 +93,12 @@ namespace DuckGame.DuckUtils
             }
 
             public void Update() {
-                if(Updated != null) Updated.Invoke(this, EventArgs.Empty);
-
                 if(Level.current != level) {
                     if(LevelChanged != null) LevelChanged.Invoke(this, new LevelChangedEventArgs(level, Level.current));
                 }
                 level = Level.current;
+
+                if(Updated != null) Updated.Invoke(this, EventArgs.Empty);
             }
         }
     }

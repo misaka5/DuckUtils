@@ -148,7 +148,11 @@ namespace DuckGame.DuckUtils {
         }
 
         public override void Quack(float volume, float pitch) {
-            if(!Active && Charge >= Capacity) Active = true;
+            if(!Active && Charge >= Capacity) {
+                if(isServerForObject) {
+                    Active = true;
+                }
+            }
             else base.Quack(volume, pitch);
         }
 

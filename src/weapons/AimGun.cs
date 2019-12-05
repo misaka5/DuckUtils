@@ -140,7 +140,7 @@ namespace DuckGame.DuckUtils {
                 if(prev == null) prev = p;
                 else {
                     Vec2 pp = prev.Value;
-                    Graphics.DrawLine(new Vec2(pp.x + offset.x, pp.y + offset.y), new Vec2(p.x + offset.x, p.y + offset.y), c, w, d);
+                    Graphics.DrawLine(pp + offset, p + offset, c, w, d);
                     prev = p;
                 }
             }
@@ -183,8 +183,8 @@ namespace DuckGame.DuckUtils {
                 points.Add(start);
 
                 Vec2? prev = null;
-                Vec2 p = new Vec2(start.x, start.y);
-                Vec2 v = new Vec2(vel.x, vel.y);
+                Vec2 p = start;
+                Vec2 v = vel;
 
                 for(float i = 0; i < 50; i += step) {
                     v += acc * step;
@@ -199,16 +199,16 @@ namespace DuckGame.DuckUtils {
 
                         if(t != null && (t.thickness > 1f || t is IAmADuck)) {
                             Target = t;
-                            Length += new Vec2(pp.x - hit.x, pp.y - hit.y).Length();
+                            Length += (pp - hit).Length();
                             points.Add(hit);
                             return;
                         }
 
-                        Length += new Vec2(pp.x - p.x, pp.y - p.y).Length();
+                        Length += (p - pp).Length();
                         prev = p;
                     }
 
-                    points.Add(new Vec2(p.x, p.y));
+                    points.Add(p);
                 }
             }
 

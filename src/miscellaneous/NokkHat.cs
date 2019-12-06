@@ -91,22 +91,14 @@ namespace DuckGame.DuckUtils {
             private void Hide() {
                 prevAlpha = targetAlpha;
                 targetAlpha = TargetHiddenAlpha;
-                if(!Thing.isServerForObject) {
-                    FollowCam cam = Level.current.camera as FollowCam;
-                    if(cam != null) cam.Remove(Thing);
-                }
             }
 
             private void Show() {
                 targetAlpha = prevAlpha;
-                if(!Thing.isServerForObject) {
-                    FollowCam cam = Level.current.camera as FollowCam;
-                    if(cam != null) cam.Add(Thing);
-                }
             }
         }
 
-        public static readonly float Capacity = 8f;
+        public static readonly float Capacity = 10f;
 
         public StateBinding ActiveBinding { get; private set; }
         private bool activated = false;

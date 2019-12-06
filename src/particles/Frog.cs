@@ -4,11 +4,7 @@ using System;
 namespace DuckGame.DuckUtils {
     public class Frog : Holdable
     {
-        public static readonly ATProvider ExplosionShrapnel = () => {
-            ATShrapnel shrapnel = new ATShrapnel();
-            shrapnel.range = 35f + Rando.Float(26f);
-            return shrapnel;
-        };
+        public static readonly ATProvider ExplosionShrapnel = ExplosionAT.From<ATShrapnel>(35f, 61f);
 
         private float lifetime;
 
@@ -46,7 +42,12 @@ namespace DuckGame.DuckUtils {
             base.Update();
 
             if (lifetime < 0) {
-                Explosion.Create(this, position, new Explosion.Config(ExplosionShrapnel, DuckUtils.GetAsset("sounds/frog_explosion.wav"), false));
+                Explosion.Create(new ExplosionInfo(this) {
+                    AmmoType = ExplosionShrapnel,
+                    Sound = DuckUtils.GetAsset("sounds/frog_explosion.wav"),
+                    Flash = false
+                });
+
                 for(int i = 0; i < 2; i++)
                     Level.Add(SmallSmoke.New(x + Rando.Float(-8f, 8f), y + Rando.Float(-8f, 8f)));
                 Level.Remove(this);

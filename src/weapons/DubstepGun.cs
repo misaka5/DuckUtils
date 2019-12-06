@@ -78,7 +78,7 @@ namespace DuckGame.DuckUtils {
 			if (ammo == 0)
 			{
                 Active = false;
-				Explosion.Create(this, position);
+				Explosion.Create(this);
 				Level.Remove(this);
 			}
 		}

@@ -6,12 +6,7 @@ namespace DuckGame.DuckUtils {
     [EditorGroup("duckutils|equipment")]
     public class ImStuffHat : AbstractHat
     {
-        public static readonly ATProvider ExplosionShrapnel = () => {
-            ATShrapnel shrapnel = new ATShrapnel();
-            shrapnel.range = 120f + Rando.Float(30f);
-            shrapnel.penetration = 99f;
-            return shrapnel;
-        };
+        public static readonly ATProvider ExplosionShrapnel = ExplosionAT.From<ATShrapnel>(120f, 150f).WithPenetration(99f);
 
         private Sound sound;
 
@@ -58,7 +53,10 @@ namespace DuckGame.DuckUtils {
                 graphic = pickupSprite = _sprite = new SpriteMap(DuckUtils.GetAsset("hats/imstuff.png"), 129, 153);
                 
                 if(Timer > 18.2f) {
-                    Explosion.Create(this, position, ExplosionShrapnel);
+                    Explosion.Create(new ExplosionInfo(this) {
+                        AmmoType = ExplosionShrapnel,
+                        Bullets = 40
+                    });
 
                     netEquippedDuck = null;
                     Level.Remove(this);

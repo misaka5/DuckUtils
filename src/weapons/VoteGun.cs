@@ -99,7 +99,7 @@ namespace DuckGame.DuckUtils {
         private void Explode() {
             Playing = false;
             endSound.Play();
-            Explosion.Create(this, position);
+            Explosion.Create(this);
             Level.Remove(this);    
         }
 

@@ -6,17 +6,31 @@ namespace DuckGame.DuckUtils {
     [EditorGroup("duckutils|equipment")]
     public class SatanicBrekotkinHat : AbstractHat
     {
-        public static readonly ATProvider ExplosionShrapnel = () => {
-            ATShrapnel shrapnel = new ATShrapnel();
-            shrapnel.range = 120f + Rando.Float(26f);
-            shrapnel.penetration = 99f;
-            return shrapnel;
-        };
+        public static readonly ATProvider ExplosionShrapnel = ExplosionAT.From<ATShrapnel>(120f, 150f).WithPenetration(99f);
 
         public StateBinding PlayingBinding { get; private set; }
         public StateBinding TimeOpenedBinding { get; private set; }
 
         private bool exploded;
+        private bool Exploded {
+            get {
+                return exploded;
+            }
+
+            set {
+                if(exploded != value) {
+                    if(value) {
+                        Explosion.Create(new ExplosionInfo(this) {
+                            AmmoType = ExplosionShrapnel,
+                            Bullets = 40
+                        });
+                    }
+
+                    exploded = value;
+                }
+            }
+        }
+
         private Sound sound;
 
         private bool _playing;
@@ -47,18 +61,20 @@ namespace DuckGame.DuckUtils {
 
         public override void Quack(float volume, float pitch) {}
 
-        public override void OpenHat() {
+        public override void OpenHat() 
+        {
             Playing = true;
         }
         
-	    public override void CloseHat() {
+	    public override void CloseHat() 
+        {
             Playing = false;
         }
 
-        public override void Update() {
-            if (TimeOpened > 4f && !exploded) {
-                Explosion.Create(this, position, ExplosionShrapnel);
-                exploded = true;
+        public override void Update() 
+        {
+            if (TimeOpened > 4f) {
+                Exploded = true;
             }
 
             base.Update();

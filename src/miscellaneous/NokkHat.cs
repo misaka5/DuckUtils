@@ -59,13 +59,7 @@ namespace DuckGame.DuckUtils {
 
             private float TargetHiddenAlpha {
                 get {
-                    if(Thing.isServerForObject) return 0.5f;
-
-                    float speed = Math.Abs(Thing.hSpeed) + Math.Abs(Thing.vSpeed);
-                    if(speed > 5) speed = 5;
-                    speed /= 5;
-
-                    return speed * 0.209f + 0.001f;
+                    return Thing.isServerForObject ? 0.5f : 0f;
                 }
             }
 

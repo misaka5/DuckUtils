@@ -111,7 +111,9 @@ namespace DuckGame.DuckUtils {
 
         public override void Impact(MaterialThing with, ImpactedFrom from, bool solid)
         {
+            if(!active) return;
             if(with == owner) return;
+            
             if(with is PhysicsObject) {
                 if(from == ImpactedFrom.Top) { 
                     with.SolidImpact(this, ImpactedFrom.Bottom);

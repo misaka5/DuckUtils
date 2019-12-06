@@ -35,16 +35,19 @@ namespace DuckGame.DuckUtils {
             TimerBinding = new StateBinding("Timer");
 
             _sprite = new SpriteMap(DuckUtils.GetAsset("hats/imstuff.png"), 129, 153);
-            sound = SFX.Get(DuckUtils.GetAsset("sounds/imstuff.wav"), 1f, 0f, 0f, false);
+            sound = SFX.Get(DuckUtils.GetAsset("sounds/imstuff.wav"), 0.8f, 0f, 0f, false);
         }
 
         public override void Quack(float volume, float pitch) {}
+
+        public override void Terminate() {
+            Playing = false;
+        }
 
         public override void Update() {
 
             if (netEquippedDuck != null && !Playing)
             {
-                sound.Play();
                 Playing = true;
             }
 

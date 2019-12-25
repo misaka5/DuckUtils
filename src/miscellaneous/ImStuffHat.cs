@@ -58,7 +58,7 @@ namespace DuckGame.DuckUtils {
                 if(Timer > 18.2f) {
                     Explosion.Create(new ExplosionInfo(this) {
                         AmmoType = ExplosionShrapnel,
-                        Bullets = 40
+                        Bullets = 60
                     });
 
                     netEquippedDuck = null;

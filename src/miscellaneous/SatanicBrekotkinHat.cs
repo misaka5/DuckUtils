@@ -22,7 +22,7 @@ namespace DuckGame.DuckUtils {
                     if(value) {
                         Explosion.Create(new ExplosionInfo(this) {
                             AmmoType = ExplosionShrapnel,
-                            Bullets = 40
+                            Bullets = 60
                         });
                     }
 

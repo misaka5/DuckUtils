@@ -18,7 +18,6 @@ namespace DuckGame.DuckUtils {
         
             private static void Clear() {
                 states.Clear();
-                DevConsole.Log("NOKK UPDATE: clear", Color.Yellow);
             }
 
             private static void UpdateAll() {
@@ -112,7 +111,6 @@ namespace DuckGame.DuckUtils {
                     }
 
                     activated = value;
-                    DevConsole.Log("NOKK UPDATE: " + value, Color.Red);
                 }
             }
         }

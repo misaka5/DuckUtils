@@ -7,13 +7,32 @@ namespace DuckGame.DuckUtils {
     
     public static class ExplosionAT {
 
-        public static readonly ATProvider Default = From<ATShrapnel>(50f, 76f);
+        public static readonly ATProvider Default = 
+            () => {
+                AmmoType type = new ATShrapnel();
+                type.range = Rando.Float(50f, 76f);
+                return type;
+            };
 
-        public static ATProvider From<T>(float minRange, float maxRange) where T : AmmoType, new() {
+        public static ATProvider From<T>() where T : AmmoType, new() {
+            return () => new T();
+        }
+
+        public static ATProvider WithRange(this ATProvider provider, float range) {
+            if(provider == null) throw new ArgumentNullException("provider");
             return () => {
-                T shrapnel = new T();
-                shrapnel.range = Rando.Float(minRange, maxRange);
-                return shrapnel;
+                AmmoType type = provider.Invoke();
+                type.range = range;
+                return type;
+            };
+        }
+
+         public static ATProvider WithRange(this ATProvider provider, float rangeMin, float rangeMax) {
+            if(provider == null) throw new ArgumentNullException("provider");
+            return () => {
+                AmmoType type = provider.Invoke();
+                type.range = Rando.Float(rangeMin, rangeMax);
+                return type;
             };
         }
 

@@ -6,7 +6,7 @@ namespace DuckGame.DuckUtils {
     [EditorGroup("duckutils|equipment")]
     public class ImStuffHat : AbstractHat
     {
-        public static readonly ATProvider ExplosionShrapnel = ExplosionAT.From<ATShrapnel>(120f, 150f).WithPenetration(99f);
+        public static readonly ATProvider ExplosionShrapnel = ExplosionAT.From<ATShrapnel>().WithRange(120f, 150f).WithPenetration(99f);
 
         private Sound sound;
 
@@ -58,7 +58,7 @@ namespace DuckGame.DuckUtils {
                 if(Timer > 18.2f) {
                     Explosion.Create(new ExplosionInfo(this) {
                         AmmoType = ExplosionShrapnel,
-                        Bullets = 40
+                        Bullets = 60
                     });
 
                     netEquippedDuck = null;

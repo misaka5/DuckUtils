@@ -183,9 +183,11 @@ namespace DuckGame.DuckUtils {
             float cangle = spr.angle;
             Depth cdepth = spr.depth;
             bool cfliph = spr.graphic == null ? false : spr.graphic.flipH;
+            sbyte coffdir = spr.offDir;
             Vec2 cscale = spr.scale;
 
-            if(spr.graphic != null) spr.graphic.flipH = graphic.flipH;
+            if(spr.graphic != null) spr.graphic.flipH = offDir < 0;
+            spr.offDir = offDir;
             spr.scale = scale;
             spr.depth = depth + d;
             spr.angle = angle;
@@ -195,6 +197,7 @@ namespace DuckGame.DuckUtils {
             spr.Draw();
 
             if(spr.graphic != null) spr.graphic.flipH = cfliph;
+            spr.offDir = coffdir;
             spr.scale = cscale;
             spr.depth = cdepth;
             spr.angle = cangle;

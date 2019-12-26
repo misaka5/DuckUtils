@@ -6,7 +6,7 @@ namespace DuckGame.DuckUtils {
     [EditorGroup("duckutils|equipment")]
     public class SatanicBrekotkinHat : AbstractHat
     {
-        public static readonly ATProvider ExplosionShrapnel = ExplosionAT.From<ATShrapnel>(120f, 150f).WithPenetration(99f);
+        public static readonly ATProvider ExplosionShrapnel = ExplosionAT.From<ATShrapnel>().WithRange(120f, 150f).WithPenetration(99f);
 
         public StateBinding PlayingBinding { get; private set; }
         public StateBinding TimeOpenedBinding { get; private set; }
@@ -22,7 +22,7 @@ namespace DuckGame.DuckUtils {
                     if(value) {
                         Explosion.Create(new ExplosionInfo(this) {
                             AmmoType = ExplosionShrapnel,
-                            Bullets = 40
+                            Bullets = 60
                         });
                     }
 

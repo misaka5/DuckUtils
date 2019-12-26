@@ -4,7 +4,7 @@ using System;
 namespace DuckGame.DuckUtils {
     public class Frog : Holdable
     {
-        public static readonly ATProvider ExplosionShrapnel = ExplosionAT.From<ATShrapnel>(35f, 61f);
+        public static readonly ATProvider ExplosionShrapnel = ExplosionAT.From<ATShrapnel>().WithRange(35f, 61f);
 
         private float lifetime;
 

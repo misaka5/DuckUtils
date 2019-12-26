@@ -102,11 +102,11 @@ namespace DuckGame.DuckUtils {
             bouncy = 0.1f;
 
             center = new Vec2(16f, 18f);
-            collisionOffset = new Vec2(-5f, -18f);
-            collisionSize = new Vec2(15f, 27f);
-            handOffset = new Vec2(0f, 1000000f);
+            collisionOffset = new Vec2(-2f, -18f);
+            collisionSize = new Vec2(13f, 27f);
+            handOffset = new Vec2(0f, 1000000f); //hacky way to remove hand
             _holdOffset = new Vec2(-3f, 4f);
-            _barrelOffsetTL = new Vec2(23f, 12f);
+            _barrelOffsetTL = new Vec2(23f, 9f);
         }
 
         public override void Impact(MaterialThing with, ImpactedFrom from, bool solid)
@@ -130,7 +130,7 @@ namespace DuckGame.DuckUtils {
                         with.hSpeed = -2f;
                     }
 
-                    if(with is Gun) (with as Gun).PressAction();
+                    if(with is Gun && with.active) (with as Gun).PressAction();
                 }
 
                 if(offDir > 0 && from == ImpactedFrom.Right) {
@@ -151,7 +151,7 @@ namespace DuckGame.DuckUtils {
                         if(with is PhysicsObject) (with as PhysicsObject).sleeping = false;
                     }
                     
-                    if(with is Gun) (with as Gun).PressAction();
+                    if(with is Gun && with.active) (with as Gun).PressAction();
                 }
 
                 if(offDir < 0 && from == ImpactedFrom.Left) {
@@ -172,7 +172,7 @@ namespace DuckGame.DuckUtils {
                         if(with is PhysicsObject) (with as PhysicsObject).sleeping = false;
                     }
 
-                    if(with is Gun) (with as Gun).PressAction();
+                    if(with is Gun && with.active) (with as Gun).PressAction();
                 }
             }
 
@@ -207,6 +207,7 @@ namespace DuckGame.DuckUtils {
 
             Vec2 hit;
             IAmADuck duck = Level.CheckRay<IAmADuck>(barrelPosition, barrelPosition + barrelVector * ZapRange, out hit);
+            MaterialThing supp = null;
 
             Duck current = duck.ToDuck();
             if(current != null) {
@@ -227,6 +228,19 @@ namespace DuckGame.DuckUtils {
                         state.Clear();
                         break;
                 }
+            } else {
+                supp = Level.CheckRay<Block>(barrelPosition, barrelPosition + barrelVector * ZapRange, this, out hit);
+            }
+
+            if(current != null || supp != null) {
+                Vec2 norm = offDir < 0 ? Vec2.Unitx : -Vec2.Unitx;
+                float angle = Rando.Float(-1f, 1f);
+                float vel = Rando.Float(0.2f, 0.4f);
+
+                Vec2 velVec = norm.Rotate(angle, Vec2.Zero);
+                Vec2 pos = hit + Vec2.Unity * Rando.Float(-2f, 2f);
+
+                Level.Add(ElectricParticle.New(pos, velVec));
             }
         }
 

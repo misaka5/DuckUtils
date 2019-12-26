@@ -1,6 +1,7 @@
 using DuckGame;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 
 namespace DuckGame.DuckUtils {
 
@@ -9,9 +10,31 @@ namespace DuckGame.DuckUtils {
     {
         public class HiddenState {
 
+            #region Connection Indicator Override Hacks
+
+            private static readonly Func<Dictionary<NetworkConnection, ConnectionIndicatorElement>> cieHook;
+
+            private static Func<Dictionary<NetworkConnection, ConnectionIndicatorElement>> CreateConnectionIndicatorHook() {
+                return Expression.Lambda<Func<Dictionary<NetworkConnection, ConnectionIndicatorElement>>>(Expression.Field(null, typeof(ConnectionIndicator), "_connections")).Compile();
+            }
+
+            private static void DrawHandler() {
+                if(Network.isActive) {
+                    Dictionary<NetworkConnection, ConnectionIndicatorElement> h = cieHook.Invoke();
+                    foreach(ConnectionIndicatorElement elem in h.Values) {
+                        if(states.ContainsKey(elem.duck)) elem.duck = null;
+                    }
+                }
+            }
+
+            #endregion
+
             static HiddenState() {
                 DuckUtils.Updated += (e, args) => UpdateAll();
+                DuckUtils.Drawing += (e, args) => DrawHandler();
                 DuckUtils.LevelChanged += (e, args) => Clear();
+
+                cieHook = CreateConnectionIndicatorHook();
             }
 
             private static readonly IDictionary<Thing, HiddenState> states = new Dictionary<Thing, HiddenState>();
@@ -78,7 +101,9 @@ namespace DuckGame.DuckUtils {
                 }
 
                 if(Hidden) targetAlpha = TargetHiddenAlpha;
+
                 Thing.alpha += (targetAlpha - Thing.alpha) * 0.1f;
+                if(Math.Abs(Thing.alpha - targetAlpha) < 0.01f) Thing.alpha = targetAlpha;
             }
 
             private void Hide() {

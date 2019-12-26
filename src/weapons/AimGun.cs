@@ -13,7 +13,7 @@ namespace DuckGame.DuckUtils {
     {
         public static readonly int MaxAmmo = 8;
         public static readonly float ReloadingDuration = 0.3f;
-        public static readonly float LaunchSpeed = 9f;
+        public static readonly float LaunchSpeed = 13f;
 
         public StateBinding LoadProgressBinding { get; private set; }
         public StateBinding ReloadBinding { get; private set; }

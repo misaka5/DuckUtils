@@ -8,27 +8,37 @@ using Microsoft.Xna.Framework.Content;
 
 namespace DuckGame.DuckUtils
 {
-    public class DuckUtils : Mod, IUpdateable
+    public class DuckUtils : Mod, IUpdateable, IDrawable
     {
         public static DuckUtils Instance { get; private set; }
 
         public static event EventHandler Updated {
             add {
-                Instance.Events.Updated += value;
+                Instance.events.Updated += value;
             }
 
             remove {
-                Instance.Events.Updated -= value;
+                Instance.events.Updated -= value;
+            }
+        }
+
+        public static event EventHandler Drawing {
+            add {
+                Instance.events.Drawing += value;
+            }
+
+            remove {
+                Instance.events.Drawing -= value;
             }
         }
 
         public static event EventHandler<LevelChangedEventArgs> LevelChanged {
             add {
-                Instance.Events.LevelChanged += value;
+                Instance.events.LevelChanged += value;
             }
 
             remove {
-                Instance.Events.LevelChanged -= value;
+                Instance.events.LevelChanged -= value;
             }
         }
 
@@ -44,15 +54,24 @@ namespace DuckGame.DuckUtils
             }
         }
 
-        public event EventHandler<EventArgs> EnabledChanged;
-	    public event EventHandler<EventArgs> UpdateOrderChanged;
-
-        private readonly EventCore events = new EventCore();
-        public EventCore Events {
+        public bool Visible {
             get {
-                return events;
+                return true;
             }
         }
+
+        public int DrawOrder {
+            get {
+                return 1000;
+            }
+        }
+
+        public event EventHandler<EventArgs> EnabledChanged;
+	    public event EventHandler<EventArgs> UpdateOrderChanged;
+        public event EventHandler<EventArgs> VisibleChanged;
+	    public event EventHandler<EventArgs> DrawOrderChanged;
+
+        private readonly EventCore events = new EventCore();
 
         protected override void OnPreInitialize()
         {
@@ -65,6 +84,7 @@ namespace DuckGame.DuckUtils
             base.OnPostInitialize();
 
             (typeof(Game).GetField("updateableComponents", BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic).GetValue(MonoMain.instance) as List<IUpdateable>).Add(this);
+            (typeof(Game).GetField("drawableComponents", BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic).GetValue(MonoMain.instance) as List<IDrawable>).Add(this);
 
             if(configuration.isWorkshop) {
                 DevConsole.Log(DCSection.Mod, "|DGYELLOW|DuckUtils has been loaded as a |DGPURPLE|workshop|DGYELLOW| mod");
@@ -75,7 +95,11 @@ namespace DuckGame.DuckUtils
         }
 
         public void Update(GameTime gt) {
-            Events.Update();
+            events.Update();
+        }
+
+        public void Draw(GameTime gt) {
+            events.Draw();
         }
 
         public static string GetAsset(string localPath) {
@@ -84,6 +108,7 @@ namespace DuckGame.DuckUtils
 
         public class EventCore {
             public event EventHandler Updated;
+            public event EventHandler Drawing;
             public event EventHandler<LevelChangedEventArgs> LevelChanged;
 
             private Level level;
@@ -99,6 +124,10 @@ namespace DuckGame.DuckUtils
                 level = Level.current;
 
                 if(Updated != null) Updated.Invoke(this, EventArgs.Empty);
+            }
+
+            public void Draw() {
+                if(Drawing != null) Drawing.Invoke(this, EventArgs.Empty);
             }
         }
     }

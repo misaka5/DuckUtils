@@ -22,7 +22,7 @@ namespace DuckGame.DuckUtils {
                 if(Network.isActive) {
                     Dictionary<NetworkConnection, ConnectionIndicatorElement> h = cieHook.Invoke();
                     foreach(ConnectionIndicatorElement elem in h.Values) {
-                        if(states.ContainsKey(elem.duck)) elem.duck = null;
+                        if(elem.duck != null && states.ContainsKey(elem.duck)) elem.duck = null;
                     }
                 }
             }

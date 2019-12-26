@@ -32,6 +32,7 @@ namespace DuckGame.DuckUtils {
         {           
             graphic = new Sprite(DuckUtils.GetAsset("part/electric_particle.png"));
             center = new Vec2(1f, 1f);
+            depth += 2;
         }
 
         private void Init(Vec2 pos, Vec2 vel) {

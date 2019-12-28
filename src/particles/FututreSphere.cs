@@ -10,8 +10,6 @@ namespace DuckGame.DuckUtils {
 
 	    public StateBinding VelocityBinding { get; private set; }
 
-        private Sprite sprite;
-
         private float radius;
 
         private Vec2 travel;
@@ -23,7 +21,6 @@ namespace DuckGame.DuckUtils {
             PositionBinding = new CompressedVec2Binding("position", 2147483647, isvelocity: false, doLerp: true);
             VelocityBinding = new CompressedVec2Binding("travel", 1);
 
-            sprite = new Sprite(DuckUtils.GetAsset("part/fututre_beam.png"));
             radius = 10f;
             depth = 0.5f;
 
@@ -34,17 +31,24 @@ namespace DuckGame.DuckUtils {
         public override void Update() {
             base.Update();
 
-            position += travel * radius * 15f * Maths.IncFrameTimer();
-            radius += 35f * Maths.IncFrameTimer();
+            position += travel * radius * 20f * Maths.IncFrameTimer();
+            radius += 600f / (radius + 1f) * Maths.IncFrameTimer();
 
-            if (isServerForObject && (base.x > Level.current.bottomRight.x + 200f || base.x < Level.current.topLeft.x - 200f))
+            if (isServerForObject && 
+                base.x > Level.current.bottomRight.x + 200f || 
+                base.x < Level.current.topLeft.x - 200f ||
+                base.y > Level.current.bottomRight.y + 200f || 
+                base.y < Level.current.topLeft.y - 200f)
             {
                 Level.Remove(this);
             }
 
             foreach (MaterialThing item in Level.CheckCircleAll<MaterialThing>(position, radius))
             {
-                if(item != sender && item.isServerForObject) {
+                bool itemIsSender = item == sender;
+                bool itemIsDuckSender = (item is IAmADuck) && (sender is IAmADuck) && ((IAmADuck)item).ToDuck() == sender;
+                
+                if(!(itemIsSender || itemIsDuckSender) && item.isServerForObject) {
                     item.Destroy(new DTIncinerate(this));
                 }
             }

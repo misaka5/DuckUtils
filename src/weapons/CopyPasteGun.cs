@@ -145,7 +145,7 @@ namespace DuckGame.DuckUtils {
 
             Vec2 hit;
             Holdable h = Level.current.CollisionRay<Holdable>(barrelPosition, barrelPosition + barrelVector * CopyRange, this, out hit);
-            if(h != null && !(h is RagdollPart)) {
+            if(h != null && !(h is RagdollPart) && h.active) {
                 if(Selected != h) {
                     selector.SetAnimation("");
                     selector.SetAnimation("spawn");

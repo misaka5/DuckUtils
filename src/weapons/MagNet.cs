@@ -7,16 +7,18 @@ namespace DuckGame.DuckUtils {
     [BaggedProperty("isFatal", false)]
     public class MagNet : Gun
     {
-		public static readonly ATProvider ExplosionShrapnel = ExplosionAT.From<ATShrapnel>().WithRange(4f, 10f);
+		public static readonly ATProvider ExplosionShrapnel = ExplosionAT.From<ATShrapnel>().WithRange(2f, 6f);
 
 		public static readonly float MaxRange = 100f;
 		public static readonly float RangeAllocationSpeed = 60f;
 		public static readonly float ExplosionRangeSquared = 15f * 15f;
 		public static readonly float CapturingSpeed = 20.6667f;
-		public static readonly float SpeedApproachMod = 0.05f;
+		public static readonly float SpeedApproachMod = 0.08f;
 		public static readonly float ExplosionTime = 1f;
+		public static readonly float RandomFluctionations = 0.5f;
 
-        public readonly SpriteMap spriteMap;
+        private readonly SpriteMap spriteMap;
+		private readonly SpriteMap lights;
 
 		public StateBinding StateBinding { get; private set; }
 
@@ -38,7 +40,7 @@ namespace DuckGame.DuckUtils {
 
 			set {
 				if(state != value) {
-					//UpdateState(value);
+					UpdateNetState(value);
 					state = value;
 				}
 			}
@@ -80,20 +82,19 @@ namespace DuckGame.DuckUtils {
             _bio = "h";
 
 			graphic = spriteMap = new SpriteMap(DuckUtils.GetAsset("weapons/magnet.png"), 16, 16);
+			lights = new SpriteMap(DuckUtils.GetAsset("weapons/magnet_light.png"), 32, 32);
 			
 			spriteMap.AddAnimation("active", 0.1f, true, 1, 2);
 			spriteMap.AddAnimation("idle", 0.1f, true, 0);
 			spriteMap.SetAnimation("idle");
 
-			center = new Vec2(8f, 4f);
-			collisionOffset = new Vec2(-8f, 0f);
-			collisionSize = new Vec2(16f, 10f);
-			_barrelOffsetTL = new Vec2(20f, 8f);
-			_fullAuto = true;
-			_fireWait = 1.75f;
-			_kickForce = 0.6f;
-			_holdOffset = new Vec2(0f, -5f);
-            _fireSound = "";
+			lights.AddAnimation("active", 0.1f, true, 1, 2);
+			lights.AddAnimation("idle", 0.1f, true, 0);
+			lights.SetAnimation("idle");
+
+			center = new Vec2(8f, 8f);
+			collisionOffset = new Vec2(-4f, -4f);
+			collisionSize = new Vec2(8f, 8f);
         }
 
 		public override void OnPressAction()
@@ -102,6 +103,8 @@ namespace DuckGame.DuckUtils {
 				CurrentState = State.Attaching;
 				SFX.Play("pullPin");
 				spriteMap.SetAnimation("active");
+				lights.SetAnimation("active");
+
 				canPickUp = false;
 				if(duck != null) duck.doThrow = true;
 			}
@@ -122,7 +125,7 @@ namespace DuckGame.DuckUtils {
 		}
 
 		private bool CheckAccessibility(PhysicsObject obj, bool targeted) {
-			if(obj.removeFromLevel || !obj.active) return false;
+			if(obj.removeFromLevel || !obj.active || obj.owner != null) return false;
 			if(!targeted && Math.Abs(obj.hSpeed) + Math.Abs(obj.vSpeed) < 2f) return false;
 			if(targeted && (position - obj.position).lengthSq > 3 * MaxRange * MaxRange) return false;
 			
@@ -132,11 +135,18 @@ namespace DuckGame.DuckUtils {
 		}
 
 		private void ApproachTarget() {
-			Vec2 delta = position - target.position;
+			Vec2 t = Offset(Vec2.Unity * -3f);
+			Vec2 delta = t - target.position;
 			Vec2 grav = delta.normalized * (CapturingSpeed * (1f - delta.lengthSq / (MaxRange * MaxRange)));
 								
-			target.hSpeed += (grav.x - target.hSpeed) * SpeedApproachMod;
-			target.vSpeed += (grav.y - target.vSpeed) * SpeedApproachMod;
+			target.hSpeed += (grav.x - target.hSpeed) * SpeedApproachMod + Rando.Float(-RandomFluctionations, RandomFluctionations);
+			target.vSpeed += (grav.y - target.vSpeed) * SpeedApproachMod + Rando.Float(-RandomFluctionations, RandomFluctionations);;
+		}
+
+		private void UpdateNetState(State value) {
+			if(value == State.Exploded) {
+				Explosion.Create(this, ExplosionShrapnel);
+			}
 		}
 
 		public override void Update() 
@@ -145,7 +155,7 @@ namespace DuckGame.DuckUtils {
 
 			if(isServerForObject) {
 				if(attachedTo != null) {
-					if(attachedTo.removeFromLevel) {
+					if(attachedTo.removeFromLevel || (attachedOwnerPos - attachedTo.position).LengthSquared() > 0.1f || Math.Max(hSpeed, vSpeed) > 0.1f) {
 						attachedTo = null;
 						gravMultiplier = 1f;
 						CurrentState = State.Attaching;
@@ -183,24 +193,34 @@ namespace DuckGame.DuckUtils {
 						break;
 
 					case State.Exploding:
-						if(captureTime < ExplosionTime && target != null && CheckAccessibility(target, true)) {
+						if(captureTime < ExplosionTime && target != null) {
 							ApproachTarget();
+
+							if(!CheckAccessibility(target, true)) {
+								CurrentState = State.Active;
+							}
 							
 							captureTime += Maths.IncFrameTimer();
 							if(Rando.Float(1f) < 2 / 60f) target.PressAction();
 						} else {
 							captureTime = 0f;
-
-							Explosion.Create(this, ExplosionShrapnel);
-
-							if(target != null) Level.Remove(target);
-							CurrentState = State.Active;
-
-							if(--ammo == 0) Level.Remove(this);
+							CurrentState = State.Exploded;
 						}
+						break;
+
+					case State.Exploded:
+						if(target != null) Level.Remove(target);
+						CurrentState = State.Active;
+
+						if(--ammo <= 0) Level.Remove(this);
 						break;
 				}
 			}
+		}
+
+		public override void Draw() {
+			base.Draw();
+			Draw(lights, -16f, -12f, -8);
 		}
 		
 		public enum State : byte {
@@ -208,7 +228,8 @@ namespace DuckGame.DuckUtils {
             Attaching,
 			Active,
 			Targeted,
-			Exploding
+			Exploding,
+			Exploded
         }
     }
 }

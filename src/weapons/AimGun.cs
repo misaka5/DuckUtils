@@ -74,12 +74,7 @@ namespace DuckGame.DuckUtils {
             if(isServerForObject) {
                 sound.Play();
 
-                EnergySphere sphere = new EnergySphere(barrelPosition.x, barrelPosition.y, owner);
-                Vec2 vel = barrelVector * LaunchSpeed;
-                
-                sphere.hSpeed = vel.x;
-                sphere.vSpeed = vel.y;
-
+                EnergySphere sphere = new EnergySphere(barrelPosition.x, barrelPosition.y, owner, barrelVector * LaunchSpeed);
                 Level.Add(sphere);
             }
         }
@@ -90,7 +85,7 @@ namespace DuckGame.DuckUtils {
             
             if (Reloaded)
             {
-                path.Integrate(barrelPosition, barrelVector * LaunchSpeed, new Vec2(0, currentGravity));
+                path.Integrate(barrelPosition, barrelVector * LaunchSpeed, EnergySphere.Gravity);
                 
                 Duck d = (path.Target as IAmADuck).ToDuck();
                 if(d != null && d != owner) {

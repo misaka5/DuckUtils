@@ -176,35 +176,6 @@ namespace DuckGame.DuckUtils {
             Active = true;
         }
 
-        //ultimate hack (kosteel)
-        private void DrawThing(Thing spr, float alpha, int d = 1) {
-            Vec2 cpos = spr.position;
-            float calpha = spr.alpha;
-            float cangle = spr.angle;
-            Depth cdepth = spr.depth;
-            bool cfliph = spr.graphic == null ? false : spr.graphic.flipH;
-            sbyte coffdir = spr.offDir;
-            Vec2 cscale = spr.scale;
-
-            if(spr.graphic != null) spr.graphic.flipH = offDir < 0;
-            spr.offDir = offDir;
-            spr.scale = scale;
-            spr.depth = depth + d;
-            spr.angle = angle;
-            spr.alpha = alpha;
-            spr.position = position;
-
-            spr.Draw();
-
-            if(spr.graphic != null) spr.graphic.flipH = cfliph;
-            spr.offDir = coffdir;
-            spr.scale = cscale;
-            spr.depth = cdepth;
-            spr.angle = cangle;
-            spr.alpha = calpha;
-            spr.position = cpos;
-        }
-
         private bool drawingSelected;
         public override void Draw()
         {
@@ -215,8 +186,8 @@ namespace DuckGame.DuckUtils {
 
             drawingSelected = true;
             UpdateSprites();
-            DrawThing(CurrentSprite, 1 - time, 0);
-            DrawThing(NextSprite, time, 1);
+            CurrentSprite.DrawAs(this, 1 - time, 1);
+            NextSprite.DrawAs(this, time, 2);
             drawingSelected = false;
 
             if(isServerForObject) {

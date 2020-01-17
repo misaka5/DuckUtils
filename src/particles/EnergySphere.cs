@@ -26,7 +26,7 @@ namespace DuckGame.DuckUtils {
             travel = velocity;
             sender = owner;
 
-            SpriteMap sprite = new SpriteMap(DuckUtils.GetAsset("part/energy_sphere.png"), 16, 16);
+            SpriteMap sprite = new SpriteMap(DuckUtils.GetAsset("part/energy_sphere.png"), 8, 8);
             sprite.AddAnimation("anim", 0.2f, true, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
             sprite.SetAnimation("anim");
             graphic = sprite;
@@ -48,7 +48,8 @@ namespace DuckGame.DuckUtils {
             }
 
             Vec2 hit;
-            MaterialThing t = Level.current.CollisionRay<MaterialThing>(position, position + travel.normalized * 5f, out hit);
+            MaterialThing t = Level.current.CollisionRay<MaterialThing>(position, position + travel * 0.2f, out hit);
+            if(t == null) t = Level.CheckCircle<IAmADuck>(position, 6f) as MaterialThing;
 
             if(t != null && (t.thickness > 1f || t is IAmADuck) && t != sender) {
                 foreach (MaterialThing item in Level.CheckCircleAll<MaterialThing>(position, 16f))

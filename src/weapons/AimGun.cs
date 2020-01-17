@@ -11,7 +11,7 @@ namespace DuckGame.DuckUtils {
     [BaggedProperty("isSuperWeapon", true)]
     public class AimGun : Gun
     {
-        public static readonly int MaxAmmo = 8;
+        public static readonly int MaxAmmo = 6;
         public static readonly float ReloadingDuration = 0.3f;
         public static readonly float LaunchSpeed = 13f;
 

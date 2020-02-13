@@ -6,7 +6,7 @@ namespace DuckGame.DuckUtils {
 
     public class EnergySphere : Thing
     {
-        public static readonly Vec2 Gravity = new Vec2(0, 0.3f);
+        public static readonly Vec2 Gravity = new Vec2(0, 0.7f);
 
         public StateBinding PositionBinding { get; private set; }
 
@@ -47,12 +47,20 @@ namespace DuckGame.DuckUtils {
                 Level.Remove(this);
             }
 
-            Vec2 hit;
-            MaterialThing t = Level.current.CollisionRay<MaterialThing>(position, position + travel * 0.2f, out hit);
-            if(t == null) t = Level.CheckCircle<IAmADuck>(position, 6f) as MaterialThing;
+            Vec2 predictedVel = travel + Gravity;
+            Vec2 predictedPos = position + predictedVel;
 
-            if(t != null && (t.thickness > 1f || t is IAmADuck) && t != sender) {
-                foreach (MaterialThing item in Level.CheckCircleAll<MaterialThing>(position, 16f))
+            Vec2 hit;
+            MaterialThing t = Level.current.CollisionRay<MaterialThing>(position, predictedPos, out hit);
+            bool isViable = t != null && (t.thickness > 1f || t is IAmADuck) && t != sender;
+            
+            if(!isViable) {
+                t = Level.CheckCircle<IAmADuck>(position, 8f) as MaterialThing;
+                if(t != null) hit = t.position;
+            } 
+
+            if(t != null) {
+                foreach (MaterialThing item in Level.CheckCircleAll<MaterialThing>(hit, 16f))
                 {
                     Fondle(item);
                     item.Zap(this);

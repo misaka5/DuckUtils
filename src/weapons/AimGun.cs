@@ -13,7 +13,7 @@ namespace DuckGame.DuckUtils {
     {
         public static readonly int MaxAmmo = 6;
         public static readonly float ReloadingDuration = 0.3f;
-        public static readonly float LaunchSpeed = 13f;
+        public static readonly float LaunchSpeed = 26f;
 
         public StateBinding LoadProgressBinding { get; private set; }
         public StateBinding ReloadBinding { get; private set; }
@@ -25,7 +25,7 @@ namespace DuckGame.DuckUtils {
 
         public bool Reloaded {
             get {
-                return !Reloading && loadProgress > ReloadingDuration;
+                return !Reloading && loadProgress >= ReloadingDuration;
             }
         }
 
@@ -70,11 +70,18 @@ namespace DuckGame.DuckUtils {
             FireSoundBinding = new NetSoundBinding("sound");
         }
 
+        private Vec2 LaunchVelocity 
+        {
+            get {
+                return barrelVector * LaunchSpeed + new Vec2(hSpeed, vSpeed);
+            }
+        }
+
         private void Launch() {
             if(isServerForObject) {
                 sound.Play();
 
-                EnergySphere sphere = new EnergySphere(barrelPosition.x, barrelPosition.y, owner, barrelVector * LaunchSpeed);
+                EnergySphere sphere = new EnergySphere(barrelPosition.x, barrelPosition.y, owner, LaunchVelocity);
                 Level.Add(sphere);
             }
         }
@@ -85,7 +92,7 @@ namespace DuckGame.DuckUtils {
             
             if (Reloaded)
             {
-                path.Integrate(barrelPosition, barrelVector * LaunchSpeed, EnergySphere.Gravity);
+                path.Integrate(barrelPosition, LaunchVelocity, EnergySphere.Gravity);
                 
                 Duck d = (path.Target as IAmADuck).ToDuck();
                 if(d != null && d != owner) {

@@ -42,6 +42,12 @@ namespace DuckGame.DuckUtils
             }
         }
 
+        public static double Time {
+            get {
+                return Instance.time;
+            }
+        }
+
         public bool Enabled {
             get {
                 return true;
@@ -72,6 +78,7 @@ namespace DuckGame.DuckUtils
 	    public event EventHandler<EventArgs> DrawOrderChanged;
 
         private readonly EventCore events = new EventCore();
+        private double time = 0f;
 
         protected override void OnPreInitialize()
         {
@@ -94,11 +101,14 @@ namespace DuckGame.DuckUtils
             }
         }
 
-        public void Update(GameTime gt) {
+        public void Update(GameTime gt) 
+        {
             events.Update();
+            time += gt.ElapsedGameTime.TotalSeconds;
         }
 
-        public void Draw(GameTime gt) {
+        public void Draw(GameTime gt) 
+        {
             events.Draw();
         }
 

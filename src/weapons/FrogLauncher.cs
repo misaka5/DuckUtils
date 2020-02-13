@@ -34,8 +34,10 @@ namespace DuckGame.DuckUtils {
         {
             get
             {
-                return (float)Math.Min(base.angle - Maths.DegToRad(aimAngle) * offDir, Math.PI / 2);
+                float ang = base.angle - Maths.DegToRad(aimAngle) * offDir;
+                return (float)Math.Min(Math.Max(ang, -Math.PI / 2), Math.PI / 2);
             }
+            
             set
             {
                 _angle = value;

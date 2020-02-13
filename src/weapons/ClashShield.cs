@@ -104,7 +104,7 @@ namespace DuckGame.DuckUtils {
             center = new Vec2(16f, 18f);
             collisionOffset = new Vec2(-2f, -18f);
             collisionSize = new Vec2(13f, 27f);
-            handOffset = new Vec2(0f, 1000000f); //hacky way to remove hand
+            handOffset = new Vec2(0f, 1000000f); //hacky way to remove the hand
             _holdOffset = new Vec2(-3f, 4f);
             _barrelOffsetTL = new Vec2(23f, 9f);
         }
@@ -205,12 +205,12 @@ namespace DuckGame.DuckUtils {
                 p.Value.Cooldown();
             }
 
-            Vec2 hit;
+            Vec2 hit, hit2;
             IAmADuck duck = Level.CheckRay<IAmADuck>(barrelPosition, barrelPosition + barrelVector * ZapRange, out hit);
-            MaterialThing supp = null;
+            MaterialThing supp = Level.CheckRay<Block>(barrelPosition, hit, this, out hit2);
 
             Duck current = duck.ToDuck();
-            if(current != null) {
+            if(current != null && supp == null) {
                 ZapState state = GetZapState(current);
 
                 switch(state.Increase()) {
@@ -228,20 +228,22 @@ namespace DuckGame.DuckUtils {
                         state.Clear();
                         break;
                 }
-            } else {
-                supp = Level.CheckRay<Block>(barrelPosition, barrelPosition + barrelVector * ZapRange, this, out hit);
+
+                CreateParticleAt(hit);
+            } else if(supp != null) {
+                CreateParticleAt(hit2);
             }
+        }
 
-            if(current != null || supp != null) {
-                Vec2 norm = offDir < 0 ? Vec2.Unitx : -Vec2.Unitx;
-                float angle = Rando.Float(-1f, 1f);
-                float vel = Rando.Float(0.2f, 0.4f);
+        private void CreateParticleAt(Vec2 hit) {
+            Vec2 norm = offDir < 0 ? Vec2.Unitx : -Vec2.Unitx;
+            float angle = Rando.Float(-1f, 1f);
+            float vel = Rando.Float(0.2f, 0.4f);
 
-                Vec2 velVec = norm.Rotate(angle, Vec2.Zero);
-                Vec2 pos = hit + Vec2.Unity * Rando.Float(-2f, 2f);
+            Vec2 velVec = norm.Rotate(angle, Vec2.Zero);
+            Vec2 pos = hit + Vec2.Unity * Rando.Float(-2f, 2f);
 
-                Level.Add(ElectricParticle.New(pos, velVec));
-            }
+            Level.Add(ElectricParticle.New(pos, velVec));
         }
 
         public override void Update()

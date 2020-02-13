@@ -6,6 +6,8 @@ namespace DuckGame.DuckUtils {
     [EditorGroup("duckutils|equipment")]
     public class BrekotkinHat : AbstractHat
     {
+        private static readonly float BeatTimeDelta = 60f / 130f;
+
         private Sound sound;
 
         public StateBinding PlayingBinding { get; private set; }
@@ -25,6 +27,8 @@ namespace DuckGame.DuckUtils {
             }
         }
 
+        private float timer = 0f;
+
         public BrekotkinHat(float x, float y) : base(x, y) {
             PlayingBinding = new StateBinding("Playing");
 
@@ -39,11 +43,35 @@ namespace DuckGame.DuckUtils {
         public override void OpenHat() 
         {
             Playing = true;
+            timer = BeatTimeDelta;
         }
 
 	    public override void CloseHat() 
         {
             Playing = false;
+        }
+
+        public override void Update() 
+        {
+            base.Update();
+
+            if(Playing) 
+            {
+                timer -= Maths.IncFrameTimer();
+                if(timer <= 0f)
+                {
+                    timer += BeatTimeDelta;
+                    OnBeat();
+                }   
+            }     
+        }
+
+        private void OnBeat()
+        {
+            foreach(PhysicsObject d in Level.current.things[typeof(PhysicsObject)]) 
+            {
+                d.vSpeed -= 1.25f;
+            }
         }
     }
 }

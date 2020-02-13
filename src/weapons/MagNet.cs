@@ -15,7 +15,7 @@ namespace DuckGame.DuckUtils {
 		public static readonly float CapturingSpeed = 20.6667f;
 		public static readonly float SpeedApproachMod = 0.08f;
 		public static readonly float ExplosionTime = 1f;
-		public static readonly float RandomFluctionations = 0.5f;
+		public static readonly float RandomFluctionations = 0.3f;
 
         private readonly SpriteMap spriteMap;
 		private readonly SpriteMap lights;
@@ -46,11 +46,10 @@ namespace DuckGame.DuckUtils {
 			}
 		}
 		
-
 		//state vars
 
 		private float range;
-		private Gun target;
+		private Holdable target;
 		private float captureTime;
 
 		private ImpactedFrom attachedSide;
@@ -69,6 +68,18 @@ namespace DuckGame.DuckUtils {
 			}
 		}
         
+		private bool ShouldDetach
+		{
+			get 
+			{
+				bool sleeping = !(attachedTo is PhysicsObject) || ((PhysicsObject)attachedTo).sleeping;
+				bool removed = attachedTo.removeFromLevel;
+				bool moved = (attachedOwnerPos - attachedTo.position).LengthSquared() > 0.01f;
+				bool hasVelocity = Math.Max(hSpeed, vSpeed) > 0.01f;
+				return !sleeping || removed || moved || hasVelocity;
+			}
+		}
+
         public MagNet(float xval, float yval)
             : base(xval, yval)
         {
@@ -99,14 +110,10 @@ namespace DuckGame.DuckUtils {
 
 		public override void OnPressAction()
 		{
-			if(CurrentState == State.Idle) {
-				CurrentState = State.Attaching;
+			if(CurrentState == State.Idle) 
+			{
 				SFX.Play("pullPin");
-				spriteMap.SetAnimation("active");
-				lights.SetAnimation("active");
-
-				canPickUp = false;
-				if(duck != null) duck.doThrow = true;
+				CurrentState = State.Attaching;
 			}
 		}
 
@@ -124,10 +131,10 @@ namespace DuckGame.DuckUtils {
 			}
 		}
 
-		private bool CheckAccessibility(PhysicsObject obj, bool targeted) {
+		private bool CheckAccessibility(PhysicsObject obj) {
 			if(obj.removeFromLevel || !obj.active || obj.owner != null) return false;
-			if(!targeted && Math.Abs(obj.hSpeed) + Math.Abs(obj.vSpeed) < 2f) return false;
-			if(targeted && (position - obj.position).lengthSq > 3 * MaxRange * MaxRange) return false;
+			if((CurrentState != State.Exploding) && Math.Abs(obj.hSpeed) + Math.Abs(obj.vSpeed) < 2f) return false;
+			if((CurrentState != State.Active) && (position - obj.position).lengthSq > 3 * MaxRange * MaxRange) return false;
 			
 			Vec2 hit;
 			MaterialThing t = Level.CheckRay<MaterialThing>(position, obj.position, this, out hit);
@@ -135,17 +142,30 @@ namespace DuckGame.DuckUtils {
 		}
 
 		private void ApproachTarget() {
-			Vec2 t = Offset(Vec2.Unity * -3f);
+			Vec2 t = Offset(Vec2.Unity * -6f);
 			Vec2 delta = t - target.position;
 			Vec2 grav = delta.normalized * (CapturingSpeed * (1f - delta.lengthSq / (MaxRange * MaxRange)));
 								
 			target.hSpeed += (grav.x - target.hSpeed) * SpeedApproachMod + Rando.Float(-RandomFluctionations, RandomFluctionations);
-			target.vSpeed += (grav.y - target.vSpeed) * SpeedApproachMod + Rando.Float(-RandomFluctionations, RandomFluctionations);;
+			target.vSpeed += (grav.y - target.vSpeed) * SpeedApproachMod + Rando.Float(-RandomFluctionations, RandomFluctionations);
 		}
 
 		private void UpdateNetState(State value) {
-			if(value == State.Exploded) {
-				Explosion.Create(this, ExplosionShrapnel);
+			switch(value) {
+				case State.Exploded:
+					Explosion.Create(this, ExplosionShrapnel);
+					break;
+					
+				case State.Attaching:
+					spriteMap.SetAnimation("active");
+					lights.SetAnimation("active");
+
+					canPickUp = false;
+					if(duck != null) duck.doThrow = true;
+
+					collisionOffset = new Vec2(-4f, 2f);
+					collisionSize = new Vec2(4f, 2f);
+					break;
 			}
 		}
 
@@ -155,72 +175,84 @@ namespace DuckGame.DuckUtils {
 
 			if(isServerForObject) {
 				if(attachedTo != null) {
-					if(attachedTo.removeFromLevel || (attachedOwnerPos - attachedTo.position).LengthSquared() > 0.1f || Math.Max(hSpeed, vSpeed) > 0.1f) {
+					if(ShouldDetach) {
 						attachedTo = null;
 						gravMultiplier = 1f;
 						CurrentState = State.Attaching;
+						sleeping = false;
 					} else {
 						hSpeed = vSpeed = 0f;
 						gravMultiplier = 0f;
 						angle = AttachedAngle;
+						sleeping = true;
 					}
 				}
+			}
 
-				switch(CurrentState) {
-					case State.Active: 
-						if(range < MaxRange) range += Maths.IncFrameTimer() * RangeAllocationSpeed;
-						foreach(Gun obj in Level.CheckCircleAll<Gun>(position, range)) {
-							if(obj != this && CheckAccessibility(obj, false)) {
-								target = obj;
-								Fondle(obj);
+			switch(CurrentState) {
+				case State.Attaching:
+					if(sleeping) {
+						vSpeed -= 1f;
+					}
+					
+					break;
 
-								CurrentState = State.Targeted;
-								break;
-							}
+				case State.Active: 
+					if(range < MaxRange) range += Maths.IncFrameTimer() * RangeAllocationSpeed;
+					foreach(Holdable obj in Level.CheckCircleAll<Holdable>(position, range)) {
+						if(obj != this && CheckAccessibility(obj)) {
+							target = obj;
+							Fondle(obj);
+
+							CurrentState = State.Targeted;
+							break;
 						}
-						break;
+					}
+					break;
 
-					case State.Targeted:
-						if(target != null && CheckAccessibility(target, true)) {
-							Vec2 delta = position - target.position;
+				case State.Targeted:
+					if(target != null && CheckAccessibility(target)) {
+						Vec2 delta = position - target.position;
 
-							if(delta.lengthSq < ExplosionRangeSquared) {
-								CurrentState = State.Exploding;
-							} else {
-								ApproachTarget();
-							}
-						} else CurrentState = State.Active;
-						break;
-
-					case State.Exploding:
-						if(captureTime < ExplosionTime && target != null) {
-							ApproachTarget();
-
-							if(!CheckAccessibility(target, true)) {
-								CurrentState = State.Active;
-							}
-							
-							captureTime += Maths.IncFrameTimer();
-							if(Rando.Float(1f) < 2 / 60f) target.PressAction();
+						if(delta.lengthSq < ExplosionRangeSquared) {
+							CurrentState = State.Exploding;
 						} else {
-							captureTime = 0f;
-							CurrentState = State.Exploded;
+							ApproachTarget();
 						}
-						break;
+					} else CurrentState = State.Active;
+					break;
 
-					case State.Exploded:
-						if(target != null) Level.Remove(target);
-						CurrentState = State.Active;
+				case State.Exploding:
+					if(captureTime < ExplosionTime && target != null) {
+						ApproachTarget();
 
-						if(--ammo <= 0) Level.Remove(this);
-						break;
-				}
+						if(!CheckAccessibility(target)) {
+							CurrentState = State.Active;
+						}
+						
+						captureTime += Maths.IncFrameTimer();
+						if(Rando.Float(1f) < 2 / 60f) target.PressAction();
+					} else {
+						captureTime = 0f;
+						CurrentState = State.Exploded;
+					}
+					break;
+
+				case State.Exploded:
+					if(target != null) Level.Remove(target);
+					CurrentState = State.Active;
+
+					if(--ammo <= 0) Level.Remove(this);
+					break;
 			}
 		}
 
 		public override void Draw() {
 			base.Draw();
 			Draw(lights, -16f, -12f, -8);
+			
+			//Graphics.DrawString(CurrentState.ToString(), position, Color.Red, depth + 1, null, 1f);
+			//Graphics.DrawLine(position, Offset(Vec2.Unity * -6f), Color.Blue, 2f, depth + 2);
 		}
 		
 		public enum State : byte {

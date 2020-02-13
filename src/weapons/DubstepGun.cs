@@ -1,7 +1,8 @@
 using DuckGame;
 using System;
 
-//author: zumaster
+//author: callbuster
+//TODO refactor
 namespace DuckGame.DuckUtils {
 
     [EditorGroup("duckutils")]
@@ -11,9 +12,24 @@ namespace DuckGame.DuckUtils {
     {
         public readonly SpriteMap spriteMap;
 
+		public readonly float Delay = 1.65f;
+		public float Counter = 0;
+		public float ShotDelay  = 0.3f;
+
+		public bool Pressed = false;
+		public bool PreSound = true; // platinum-kostil;
+
+		Sound presound = SFX.Get(DuckUtils.GetAsset("sounds/dubstep_sample2.wav"), 1f, 0f, 0f, false);
+
 		public StateBinding ActiveBinding { get; private set; }
 		
         private bool playing = false;
+
+		public override void PressAction()
+		{
+			Pressed = true;
+		}
+
         public bool Active {
             get {
                 return playing;
@@ -50,7 +66,7 @@ namespace DuckGame.DuckUtils {
 			_barrelOffsetTL = new Vec2(20f, 8f);
 			_fullAuto = true;
 			_fireWait = 1.75f;
-			_kickForce = 0.6f;
+			_kickForce = 0.8f;
 			_holdOffset = new Vec2(0f, -5f);
             _fireSound = "";
 
@@ -58,22 +74,34 @@ namespace DuckGame.DuckUtils {
         
             ActiveBinding = new StateBinding("Active");
         }
-
-		public override void OnPressAction()
-		{
-			Active = true;
-		}
-
-		public override void OnReleaseAction()
-		{
-			Active = false;
-		}
         
 		public override void Update() 
         {
 			base.Update();
-
             spriteMap.SetAnimation(Active ? "active" : "idle");
+
+			if (Pressed)
+			{
+				Counter += Maths.IncFrameTimer();
+
+				if (!Active && PreSound)
+				{
+					presound.Play();
+					PreSound = false;
+				}
+
+				if (Counter >= Delay)
+				{
+					Active = true;
+					Counter = 0;
+				}
+
+				if (Active && Counter <= ShotDelay)
+				{
+					Fire();
+					Counter = 0;
+				}
+			}
 
 			if (ammo == 0)
 			{

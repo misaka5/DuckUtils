@@ -2,7 +2,6 @@ using DuckGame;
 using System;
 
 //author: callbuster
-//TODO refactor
 namespace DuckGame.DuckUtils {
 
     [EditorGroup("duckutils")]
@@ -10,26 +9,15 @@ namespace DuckGame.DuckUtils {
     [BaggedProperty("isFatal", true)]
     public class DubstepGun : Gun
     {
+		public static readonly float PreloadDelay = 1.65f;
+		public static readonly float ShotDelay = 0.3f;
+
         public readonly SpriteMap spriteMap;
-
-		public readonly float Delay = 1.65f;
-		public float Counter = 0;
-		public float ShotDelay  = 0.3f;
-
-		public bool Pressed = false;
-		public bool PreSound = true; // platinum-kostil;
-
-		Sound presound = SFX.Get(DuckUtils.GetAsset("sounds/dubstep_sample2.wav"), 1f, 0f, 0f, false);
+		private float timer = 0f;
 
 		public StateBinding ActiveBinding { get; private set; }
 		
-        private bool playing = false;
-
-		public override void PressAction()
-		{
-			Pressed = true;
-		}
-
+		private bool playing;
         public bool Active {
             get {
                 return playing;
@@ -70,36 +58,30 @@ namespace DuckGame.DuckUtils {
 			_holdOffset = new Vec2(0f, -5f);
             _fireSound = "";
 
-			sound = SFX.Get(DuckUtils.GetAsset("sounds/dubstep_sample.wav"), 1f, 0f, 0f, true);
+			sound = SFX.Get(DuckUtils.GetAsset("sounds/dubstep_sample.wav"), 0.75f, 0f, 0f, true);
         
             ActiveBinding = new StateBinding("Active");
         }
         
+		public override void PressAction()
+		{
+			Active = true;
+			timer = PreloadDelay;
+		}
+
 		public override void Update() 
         {
 			base.Update();
             spriteMap.SetAnimation(Active ? "active" : "idle");
 
-			if (Pressed)
+			if (Active)
 			{
-				Counter += Maths.IncFrameTimer();
+				timer -= Maths.IncFrameTimer();
 
-				if (!Active && PreSound)
-				{
-					presound.Play();
-					PreSound = false;
-				}
-
-				if (Counter >= Delay)
-				{
-					Active = true;
-					Counter = 0;
-				}
-
-				if (Active && Counter <= ShotDelay)
+				if(timer <= 0) 
 				{
 					Fire();
-					Counter = 0;
+					timer += ShotDelay;
 				}
 			}
 
@@ -109,6 +91,11 @@ namespace DuckGame.DuckUtils {
 				Explosion.Create(this);
 				Level.Remove(this);
 			}
+		}
+
+		public override void Terminate() 
+		{
+			Active = false;
 		}
     }
 }

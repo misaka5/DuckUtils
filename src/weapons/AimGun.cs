@@ -184,7 +184,7 @@ namespace DuckGame.DuckUtils {
 
                 points.Add(start);
 
-                Vec2? prev = null;
+                Vec2 prev = start;
                 Vec2 p = start;
                 Vec2 v = vel;
 
@@ -192,23 +192,18 @@ namespace DuckGame.DuckUtils {
                     v += acc * step;
                     p += v * step;
 
-                    if(prev == null) prev = p;
-                    else {
-                        Vec2 pp = prev.Value;
+                    Vec2 hit;
+                    MaterialThing t = Level.current.CollisionRay<MaterialThing>(prev, p, out hit);
 
-                        Vec2 hit;
-                        MaterialThing t = Level.current.CollisionRay<MaterialThing>(pp, p, out hit);
-
-                        if(t != null && (t.thickness > 1f || t is IAmADuck)) {
-                            Target = t;
-                            Length += (pp - hit).Length();
-                            points.Add(hit);
-                            return;
-                        }
-
-                        Length += (p - pp).Length();
-                        prev = p;
+                    if(t != null && (t.thickness > 1f || t is IAmADuck)) {
+                        Target = t;
+                        Length += (prev - hit).Length();
+                        points.Add(hit);
+                        return;
                     }
+
+                    Length += (p - prev).Length();
+                    prev = p;
 
                     points.Add(p);
                 }

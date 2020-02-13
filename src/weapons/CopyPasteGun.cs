@@ -63,7 +63,7 @@ namespace DuckGame.DuckUtils {
             center = new Vec2(8f, 8f);
             collisionOffset = new Vec2(-8f, -8f);
             collisionSize = new Vec2(16f, 16f);
-            _barrelOffsetTL = new Vec2(24f, 8f);
+            _barrelOffsetTL = new Vec2(32f, 8f);
             //_fireSound = DuckUtils.GetAsset("sounds/copypaste_fire.wav");
             _kickForce = 0.2f;
             handOffset = new Vec2(0f, -1f);

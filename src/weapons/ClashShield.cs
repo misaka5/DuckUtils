@@ -26,6 +26,8 @@ namespace DuckGame.DuckUtils {
         public static readonly float TopCollisionHorizontalEnergy = 1.8f;
         public static readonly float CollisionEnergy = 1.8f;
 
+        public static readonly float ActivationByCollisionCooldown = 0.7f;
+
         public StateBinding ActiveBinding { get; private set; }
         public StateBinding LowChargeBinding { get; private set; }
 
@@ -65,6 +67,7 @@ namespace DuckGame.DuckUtils {
 
         private bool LowCharge { get; set; }
 
+        private float collisionActivationCooldown = 0f;
         private float charge = ShieldMaxCharge;
         private readonly IDictionary<Duck, ZapState> zapState = new Dictionary<Duck, ZapState>();
 
@@ -109,6 +112,15 @@ namespace DuckGame.DuckUtils {
             _barrelOffsetTL = new Vec2(23f, 9f);
         }
 
+        private void ActivateOnCollision(MaterialThing with) 
+        {
+            if(with is Gun && with.active && collisionActivationCooldown <= 0f) 
+            {
+                (with as Gun).PressAction();
+                collisionActivationCooldown = ActivationByCollisionCooldown;
+            }
+        }
+
         public override void Impact(MaterialThing with, ImpactedFrom from, bool solid)
         {
             if(!active) return;
@@ -130,7 +142,7 @@ namespace DuckGame.DuckUtils {
                         with.hSpeed = -2f;
                     }
 
-                    if(with is Gun && with.active) (with as Gun).PressAction();
+                    ActivateOnCollision(with);
                 }
 
                 if(offDir > 0 && from == ImpactedFrom.Right) {
@@ -151,7 +163,7 @@ namespace DuckGame.DuckUtils {
                         if(with is PhysicsObject) (with as PhysicsObject).sleeping = false;
                     }
                     
-                    if(with is Gun && with.active) (with as Gun).PressAction();
+                    ActivateOnCollision(with);
                 }
 
                 if(offDir < 0 && from == ImpactedFrom.Left) {
@@ -172,7 +184,7 @@ namespace DuckGame.DuckUtils {
                         if(with is PhysicsObject) (with as PhysicsObject).sleeping = false;
                     }
 
-                    if(with is Gun && with.active) (with as Gun).PressAction();
+                    ActivateOnCollision(with);
                 }
             }
 
@@ -271,6 +283,9 @@ namespace DuckGame.DuckUtils {
             spriteMap.SetAnimation(anim);
             lightning1.SetAnimation(anim);
             lightning2.SetAnimation(anim);
+
+            if(collisionActivationCooldown > 0f)
+                collisionActivationCooldown -= Maths.IncFrameTimer();
 
             base.Update();
         }

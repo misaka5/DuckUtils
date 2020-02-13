@@ -8,8 +8,8 @@ namespace DuckGame.DuckUtils {
     [BaggedProperty("isFatal", true)]
     public class TTSShotgun : Gun
     {
-        public static readonly int MaxAmmo = 8;
-        public static readonly float ReloadingDuration = 0.6f;
+        public static readonly int MaxAmmo = 6;
+        public static readonly float ReloadingDuration = 0.16f;
 
         public StateBinding ReloadBinding { get; private set; }
         public StateBinding LoadProgressBinding { get; private set; }
@@ -31,7 +31,7 @@ namespace DuckGame.DuckUtils {
 
             ammo = MaxAmmo;
             _ammoType = new ATShotgun();
-            _ammoType.range = 120f;
+            _ammoType.range = 140f;
             _type = "gun";
             graphic = new Sprite("combatShotgun");
             center = new Vec2(16f, 16f);

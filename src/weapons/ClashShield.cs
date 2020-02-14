@@ -65,6 +65,19 @@ namespace DuckGame.DuckUtils {
             }
         }
 
+        private float VerticalVelocity {
+            get {
+                return owner == null ? vSpeed : owner.vSpeed;
+            }
+
+            set {
+                if(owner == null)
+                    vSpeed = value;
+                else
+                    owner.vSpeed = value;
+            }
+        }
+
         private bool LowCharge { get; set; }
 
         private float collisionActivationCooldown = 0f;
@@ -140,6 +153,12 @@ namespace DuckGame.DuckUtils {
                     if (offDir < 0 && with.hSpeed > -2f)
                     {
                         with.hSpeed = -2f;
+                    }
+
+                    float relVel = with.vSpeed - VerticalVelocity;
+                    if(relVel > 0.1f) {
+                        with.vSpeed = -relVel * with.bouncy;
+                        VerticalVelocity = relVel * bouncy;
                     }
 
                     ActivateOnCollision(with);

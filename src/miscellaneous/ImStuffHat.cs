@@ -65,10 +65,21 @@ namespace DuckGame.DuckUtils {
             }
         }
 
+        private ushort TypeId {
+            get 
+            {
+                return Editor.IDToType[DisguiseType];
+            }
+
+            set {
+                DisguiseType = Editor.IDToType[value];
+            }
+        }
+
         public ImStuffHat(float x, float y) : base(x, y) {
             PlayingBinding = new StateBinding("Playing");
             TimerBinding = new StateBinding("Timer");
-            DisguiseTypeBinding = new StateBinding("DisguiseType");
+            DisguiseTypeBinding = new StateBinding("TypeId");
 
             graphic = new Sprite(DuckUtils.GetAsset("hats/imstuff.png"));
             sound = SFX.Get(DuckUtils.GetAsset("sounds/imstuff.wav"), 0.8f, 0f, 0f, false);

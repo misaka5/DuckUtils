@@ -55,12 +55,12 @@ namespace DuckGame.DuckUtils {
             bool isViable = t != null && (t.thickness > 1f || t is IAmADuck) && t != sender;
             
             if(!isViable) {
-                t = Level.CheckCircle<IAmADuck>(position, 8f) as MaterialThing;
+                t = Level.CheckCircle<IAmADuck>(position, 4f) as MaterialThing;
                 if(t != null) hit = t.position;
             } 
 
             if(t != null) {
-                foreach (MaterialThing item in Level.CheckCircleAll<MaterialThing>(hit, 16f))
+                foreach (MaterialThing item in Level.CheckCircleAll<MaterialThing>(hit, 4f))
                 {
                     Fondle(item);
                     item.Zap(this);

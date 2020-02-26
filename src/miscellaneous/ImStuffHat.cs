@@ -13,7 +13,7 @@ namespace DuckGame.DuckUtils {
 
         public StateBinding PlayingBinding { get; private set; }
         public StateBinding TimerBinding { get; private set; }
-        public StateBinding DisguiseAsBinding { get; private set; }
+        public StateBinding DisguiseTypeBinding { get; private set; }
 
         private bool _playing;
         public bool Playing {
@@ -49,16 +49,32 @@ namespace DuckGame.DuckUtils {
             }
         }
 
+        private Type disguiseType;
+        private Type DisguiseType
+        {
+            get {
+                return disguiseType;
+            }
+
+            set {
+                if(disguiseType != value) 
+                {
+                    disguiseType = value;
+                    DisguiseAs = (PhysicsObject)Editor.CreateThing(value);
+                }
+            }
+        }
+
         public ImStuffHat(float x, float y) : base(x, y) {
             PlayingBinding = new StateBinding("Playing");
             TimerBinding = new StateBinding("Timer");
-            DisguiseAsBinding = new StateBinding("DisguiseAs");
+            DisguiseTypeBinding = new StateBinding("DisguiseType");
 
             graphic = new Sprite(DuckUtils.GetAsset("hats/imstuff.png"));
             sound = SFX.Get(DuckUtils.GetAsset("sounds/imstuff.wav"), 0.8f, 0f, 0f, false);
         }
 
-        private static PhysicsObject GenerateDisguiseObject() 
+        private static Type GenerateDisguiseObjectType() 
         {
             List<Type> things = ItemBox.GetPhysicsObjects(Editor.Placeables);
 
@@ -68,7 +84,7 @@ namespace DuckGame.DuckUtils {
 
                 if(t != typeof(LavaBarrel) && t != typeof(Grapple) && t != typeof(ImStuffHat))
                 {
-                    return (PhysicsObject)Editor.CreateThing(t);
+                    return t;
                 }
             }
         }
@@ -82,12 +98,8 @@ namespace DuckGame.DuckUtils {
 
         public override void Update() 
         {
-            if (netEquippedDuck != null && !Playing)
-            {
-                Playing = true;
-            }
-
-            if(Playing) {
+            if (netEquippedDuck != null) Playing = true;
+            if (Playing) {
                 Timer += Maths.IncFrameTimer();
                 graphic = pickupSprite = _sprite = new SpriteMap(DuckUtils.GetAsset("hats/imstuff.png"), 129, 153);
                 
@@ -111,12 +123,12 @@ namespace DuckGame.DuckUtils {
         {
             if(!Playing) 
             {
-                if(isServerForObject && disguiseAs == null) 
+                if(isServerForObject && DisguiseAs == null) 
                 {
-                    DisguiseAs = GenerateDisguiseObject();
+                    DisguiseType = GenerateDisguiseObjectType();
                 }
 
-                if(!drawingDisguised && disguiseAs != null) 
+                if(!drawingDisguised && DisguiseAs != null) 
                 {
                     drawingDisguised = true;
                     DisguiseAs.DrawAs(this, alpha, 0);
